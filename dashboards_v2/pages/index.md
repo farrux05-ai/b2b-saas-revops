@@ -94,12 +94,13 @@ order by funnel_stage
 ```sql campaign_performance
 select
   campaign_name,
-  sum(total_leads) as leads,
-  sum(total_conversions) as conversions,
-  sum(total_revenue) as revenue
+  campaign_channel,
+  count(distinct lead_id) as total_leads,
+  sum(case when converted = true then 1 else 0 end) as conversions,
+  count(distinct lead_id) as campaign_members
 from fct_marketing_campaigns
-group by campaign_name
-order by revenue desc
+group by campaign_name, campaign_channel
+order by total_leads desc
 limit 10
 ```
 
