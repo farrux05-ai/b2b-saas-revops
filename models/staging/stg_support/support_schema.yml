@@ -1,0 +1,63 @@
+version: 2
+
+models:
+  - name: stg_tickets
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: account_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_accounts')
+              field: id
+              severity: warn
+
+      - name: status
+        tests:
+          - accepted_values:
+              values: [open, pending, solved, closed]
+              severity: warn
+
+      - name: priority
+        tests:
+          - accepted_values:
+              values: [low, normal, high, urgent]
+              severity: warn
+
+      - name: is_no_response
+        tests: [not_null]
+
+      - name: is_category_null
+        tests: [not_null]
+
+      - name: is_agent_null
+        tests: [not_null]
+
+      - name: is_solved_date_missing
+        tests: [not_null]
+
+      - name: ticket_row_num
+        tests: [not_null]
+
+  - name: stg_ticket_comments
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: ticket_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_tickets')
+              field: id
+
+      - name: author_type
+        tests:
+          - accepted_values:
+              values: [agent, customer]
+              severity: warn
+
+      - name: is_author_null
+        tests: [not_null]

@@ -1,0 +1,174 @@
+version: 2
+
+models:
+
+  # ════════════════════════════════════════════════════
+  # MARTS
+  # ════════════════════════════════════════════════════
+
+  - name: dim_accounts
+    config:
+      materialized: table
+    columns:
+      - name: account_id
+        tests: [not_null, unique]
+
+      - name: account_name
+        tests: [not_null]
+
+      - name: domain
+
+      - name: industry
+
+      - name: country
+
+      - name: account_segment
+        tests:
+          - not_null
+          - accepted_values:
+              values: [enterprise, mid_market, smb, unmonetized]
+
+      - name: health_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: [healthy, at_risk, churned, inactive]
+
+      - name: product_plan
+
+      - name: subscription_status
+
+      - name: mrr
+        tests: [not_null]
+
+      - name: arr
+        tests: [not_null]
+
+      - name: total_users
+        tests: [not_null]
+
+      - name: active_users
+        tests: [not_null]
+
+      - name: events_last_30d
+        tests: [not_null]
+
+      - name: last_active_at
+
+      - name: overdue_invoices
+        tests: [not_null]
+
+      - name: urgent_open_tickets
+        tests: [not_null]
+
+      - name: total_contacts
+        tests: [not_null]
+
+      - name: primary_contact_name
+
+      - name: primary_lead_source
+
+      - name: open_opportunities
+        tests: [not_null]
+
+      - name: total_won_amount
+        tests: [not_null]
+
+      - name: last_won_date
+
+      - name: updated_at
+        tests: [not_null]
+
+  - name: fct_revenue
+    description: >
+      Oylik MRR snapshot. Har qator = account + oy.
+
+      mrr_type: new | expansion | contraction | churned | trial | stable
+
+      Waterfall: SUM(new) + SUM(expansion) - SUM(contraction) - SUM(churned)
+    config:
+      materialized: table
+    columns:
+      - name: account_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_accounts')
+              field: account_id
+
+      - name: account_name
+
+      - name: account_segment
+
+      - name: revenue_month          # ← snapshot_month emas, shu nom
+        description: Oyning birinchi kuni (date_trunc)
+        tests: [not_null]
+
+      - name: plan
+
+      - name: status
+
+      - name: mrr
+        tests: [not_null]
+
+      - name: arr
+        tests: [not_null]
+
+      - name: mrr_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: [new, expansion, contraction, churned, trial, stable, unknown]
+
+      - name: total_mrr_that_month
+
+      - name: new_mrr_that_month
+
+      - name: churned_mrr_that_month
+
+      - name: updated_at
+        tests: [not_null]
+
+  - name: fct_pipeline
+    description: >
+      Lead → MQL → SQL → Opportunity → Won/Lost funnel.
+      Har qator = bitta lead. Anchor: stg_leads.
+    config:
+      materialized: table
+    columns:
+      - name: lead_id
+        tests: [not_null, unique]
+
+      - name: email
+        tests: [not_null]
+
+      # ❌ account_id — fct_pipeline modelida yo'q, olib tashlandi
+
+      - name: lead_source
+
+      - name: lead_score
+
+      - name: lead_created_at
+        tests: [not_null]
+
+      - name: first_campaign_name
+
+      - name: first_campaign_channel
+
+      - name: funnel_stage
+        tests:
+          - not_null
+          - accepted_values:
+              values: [lead, mql, sql, in_pipeline, won, lost]
+
+      - name: opportunity_amount
+
+      - name: opportunity_stage
+
+      - name: close_date
+
+      - name: days_lead_to_opp
+        description: NULL = hali opportunity bo'lmagan.
+
+      - name: updated_at
+        tests: [not_null]

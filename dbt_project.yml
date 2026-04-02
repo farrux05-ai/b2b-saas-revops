@@ -1,0 +1,55 @@
+name: revops_pipeline
+version: '1.0.0'
+config-version: 2
+
+profile: 'revops_project'
+
+model-paths: ["models"]
+test-paths:  ["tests"]
+seed-paths:  ["seeds"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+# ── Model konfiguratsiyalari ──────────────────────────
+models:
+  revops_pipeline:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: int
+    marts:
+      +materialized: table
+      +schema: marts
+
+# ── Test konfiguratsiyalari ───────────────────────────
+tests:
+  revops_pipeline:
+    # Staging: warn — data kelayotgan bo'lsa to'xtatmaymiz
+    staging:
+      +severity: warn
+      +store_failures: true       # failures ni DB ga yozadi — monitoring uchun
+      +schema: test_failures
+
+    # Intermediate: error — JOIN mantiq buzilsa to'xtat
+    intermediate:
+      +severity: error
+      +store_failures: true
+      +schema: test_failures
+
+    # Marts: error — BI noto'g'ri data ko'rmasin
+    marts:
+      +severity: error
+      +store_failures: true
+      +schema: test_failures
+
+# ── Vars ─────────────────────────────────────────────
+vars:
+  # int_account_health da ishlatiladi
+  inactive_days_threshold: 30
+  at_risk_response_hours: 24
+  at_risk_open_tickets: 3
+  at_risk_days_since_active: 14

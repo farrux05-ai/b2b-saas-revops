@@ -1,0 +1,88 @@
+version: 2
+
+models:
+  - name: stg_leads
+    description: >
+      Tozalangan lead ma'lumotlari. Email duplikatlari aniqlangan
+      (email_row_num), skor va status uyg'unsizligi flaglangan.
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: email
+        description: Lead email. NULL bo'lishi mumkin.
+
+      - name: source
+        description: Lead qayerdan keldi.
+
+      - name: status
+        tests:
+          - accepted_values:
+              values: [new, mql, sql, disqualified]
+              severity: warn
+
+      - name: lead_score
+        tests: [not_null]
+
+      - name: email_issue
+        description: >
+          NULL = muammo yo'q.
+          Qiymatlar: null_email, invalid_format, personal_domain.
+        tests:
+          - accepted_values:
+              values: [null_email, invalid_format, personal_domain]
+              severity: warn
+
+      - name: source_null
+        description: Source kiritilmagan
+        tests: [not_null]
+
+      - name: score_status_mismatch
+        tests: [not_null]
+
+      - name: email_row_num
+        description: Dedupe uchun. 1 = asl.
+        tests: [not_null]
+
+      - name: created_at
+        tests: [not_null]
+
+  - name: stg_campaigns
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: name
+        tests: [not_null]
+
+      - name: type
+        tests:
+          - accepted_values:
+              values: [paid_social, paid_search, event, outbound, seo, email]
+              severity: warn
+
+      - name: status
+        tests:
+          - accepted_values:
+              values: [draft, active, paused, completed]
+              severity: warn
+
+      - name: is_budget_null
+        tests: [not_null]
+
+      - name: is_date_broken
+        tests: [not_null]
+
+  - name: stg_campaign_members
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: lead_id
+        tests: [not_null]
+
+      - name: campaign_id
+        tests: [not_null]
+
+      - name: is_touch_date_broken
+        tests: [not_null]

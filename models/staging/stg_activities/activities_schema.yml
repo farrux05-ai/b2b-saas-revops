@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: stg_activities
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: type
+        tests:
+          - accepted_values:
+              values: [call, email, meeting, demo, note]
+              severity: warn
+
+      - name: is_type_null
+        tests: [not_null]
+
+      - name: is_date_null
+        tests: [not_null]

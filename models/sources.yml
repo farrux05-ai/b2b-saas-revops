@@ -1,0 +1,80 @@
+version: 2
+
+sources:
+  - name: revops_raw
+    database: "postgres"
+    schema: raw
+    description: >
+      Postgres-dagi xom ma'lumotlar manba.
+      DuckDB postgres extension orqali o'qiladi.
+      Hech qachon to'g'ridan o'zgartirish kiritilmaydi — append-only.
+    
+    meta:
+      external_location: "postgres://farrux:farrux05@localhost:5432/revops_database"
+
+    freshness:
+      warn_after: { count: 24, period: hour }
+      error_after: { count: 48, period: hour }
+    loaded_at_field: _loaded_at
+
+    tables:
+      # ── Marketing ─────────────────────────────────────
+      - name: leads
+        description: HubSpot form submissions va inbound leadlar
+        freshness:
+          warn_after: { count: 6, period: hour }
+
+      - name: campaigns
+        description: HubSpot marketing campaigns — budget, sana, kanal
+
+      - name: campaign_members
+        description: Qaysi lead qaysi campaign da qatnashgan (ko'prik)
+
+      # ── CRM ───────────────────────────────────────────
+      - name: accounts
+        description: HubSpot companies — B2B da asosiy entity
+        freshness:
+          warn_after: { count: 6, period: hour }
+
+      - name: contacts
+        description: HubSpot contacts — accountga bog'liq odamlar
+
+      - name: opportunities
+        description: HubSpot deals — sotuv pipeline
+
+      - name: activities
+        description: HubSpot engagements — call, email, meeting loglari
+
+      # ── Product ───────────────────────────────────────
+      - name: product_companies
+        description: Mixpanel group analytics — account darajasida usage
+
+      - name: product_users
+        description: Mixpanel user profiles — kim qachon login qildi
+
+      - name: product_events
+        description: Mixpanel raw events — har xil action loglari
+        freshness:
+          warn_after: { count: 2, period: hour }
+
+      # ── Billing ───────────────────────────────────────
+      - name: subscriptions
+        description: Stripe subscriptions — plan, MRR, status
+
+      - name: invoices
+        description: Stripe invoices — har oylik hisob-kitob
+
+      - name: payments
+        description: Stripe payment_intents — muvaffaqiyatli va failed to'lovlar
+
+      # ── Support ───────────────────────────────────────
+      - name: tickets
+        description: Intercom conversations — support so'rovlari
+
+      - name: ticket_comments
+        description: Intercom conversation parts — xabarlar tarixi
+
+      # ── Infratuzilma ──────────────────────────────────
+      - name: dead_letter
+        description: Ingestion xatolari — monitoring uchun
+        freshness: null  # monitoring jadvali, freshness shart emas

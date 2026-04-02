@@ -1,0 +1,4 @@
+name: revops
+type: duckdb
+options:
+  filename: revops_analytics.duckdb

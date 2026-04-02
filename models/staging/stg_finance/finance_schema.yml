@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: stg_subscriptions
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: account_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_accounts')
+              field: id
+              severity: warn
+
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: [active, trialing, past_due, cancelled, unpaid, paused]
+
+      - name: is_status_conflict
+        tests: [not_null]
+
+      - name: is_past_due
+        tests: [not_null]
+
+      - name: is_mrr_zero
+        tests: [not_null]
+
+  - name: stg_invoices
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: subscription_id
+        tests: [not_null]
+
+      - name: account_id
+        tests: [not_null]
+
+      - name: status
+        tests:
+          - accepted_values:
+              values: [draft, open, paid, void, uncollectible]
+              severity: warn
+
+      - name: is_overdue
+        tests: [not_null]
+
+      - name: is_paid_missing_date
+        tests: [not_null]
+
+      - name: is_zero_amount
+        tests: [not_null]
+
+  - name: stg_payments
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: invoice_id
+        tests: [not_null]
+
+      - name: account_id
+        tests: [not_null]
+
+      - name: status
+        tests:
+          - accepted_values:
+              values: [succeeded, failed, refunded]
+              severity: warn
+
+      - name: is_failed
+        tests: [not_null]
+
+      - name: payment_row_num
+        tests: [not_null]

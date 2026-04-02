@@ -1,0 +1,65 @@
+version: 2
+
+models:
+  - name: stg_accounts
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: name
+        tests: [not_null]
+
+      - name: is_industry_null
+        tests: [not_null]
+
+      - name: is_website_null
+        tests: [not_null]
+
+      - name: is_owner_null
+        tests: [not_null]
+
+  - name: stg_contacts
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: account_id
+        tests:
+          - relationships:
+              to: ref('stg_accounts')
+              field: id
+              severity: warn
+
+      - name: is_lead_unlinked
+        tests: [not_null]
+
+      - name: email_row_num
+        tests: [not_null]
+
+  - name: stg_opportunities
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+      - name: account_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_accounts')
+              field: id
+
+      - name: stage
+        tests:
+          - not_null
+          - accepted_values:
+              values: [prospecting, qualification, proposal, closed_won, closed_lost]
+              severity: warn
+
+      - name: is_amount_null
+        tests: [not_null]
+
+      - name: is_owner_null
+        tests: [not_null]
+
+      - name: is_close_date_past
+        tests: [not_null]
