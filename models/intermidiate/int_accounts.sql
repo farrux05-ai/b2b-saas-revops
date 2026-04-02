@@ -1,56 +1,83 @@
 with accounts as (
     select * from {{ ref('stg_accounts') }}
-    -- Bu anchor. Hamma narsa shunga bog'lanadi.
 ),
 
-product as (
-    select * from {{ ref('stg_product_companies') }}
-    -- accounts.id = product.account_id
-    -- To'g'ri bog'lanadi, agregatsiya shart emas (1-to-1)
-),
-
-billing as (
+-- 1:1 — bir accountda bir aktiv subscription
+subscriptions as (
     select * from {{ ref('stg_subscriptions') }}
-    -- accounts.id = subscriptions.account_id
-    -- 1-to-1 deb hisoblaymiz (bir accountda bir subscription)
+    where not is_status_conflict
 ),
 
+-- 1:1 — Mixpanel company-level analytics
+product_companies as (
+    select * from {{ ref('stg_product_companies') }}
+),
+
+-- 1:N → aggregate first
 ticket_summary as (
-    --  Bu yerda avval agregat, keyin JOIN
-    -- Chunki bir accountda ko'p ticket bo'ladi (1-to-many)
     select
         account_id,
-        count(*)                                    as total_tickets,
-        count(*) filter (where status = 'open')     as open_tickets,
-        count(*) filter (where priority = 'urgent') as urgent_tickets
+        count(*)                                        as total_tickets,
+        count(*) filter (where status = 'open')         as open_tickets,
+        count(*) filter (
+            where status = 'open' and priority = 'urgent'
+        )                                               as urgent_open_tickets,
+        avg(hours_to_first_response)                    as avg_response_hours
     from {{ ref('stg_tickets') }}
+    group by account_id
+),
+
+-- 1:N → aggregate first
+invoice_summary as (
+    select
+        account_id,
+        count(*) filter (where is_overdue)              as overdue_invoices,
+        count(*) filter (where is_zero_amount)          as zero_amount_invoices
+    from {{ ref('stg_invoices') }}
     group by account_id
 )
 
 select
-    -- Anchor dan
-    a.id                as account_id,
-    a.name              as account_name,
+    -- Identity
+    a.id                                                as account_id,
+    a.name                                              as account_name,
     a.domain,
     a.industry,
     a.country,
+    a.employee_count,
     a.owner_id,
+    a.created_at                                        as account_created_at,
 
-    -- Product dan (1-to-1, to'g'ri JOIN)
-    p.plan              as product_plan,
+    -- DQ flags
+    a.is_industry_null,
+    a.is_owner_null,
+
+    -- Billing (1:1)
+    coalesce(s.mrr, 0)                                  as mrr,
+    s.plan                                              as product_plan,
+    s.status                                            as subscription_status,
+    s.is_past_due,
+    s.is_mrr_zero,
+    s.trial_start,
+    s.trial_end,
+    s.started_at                                        as subscription_started_at,
+    s.cancelled_at                                      as subscription_cancelled_at,
+
+    -- Product (1:1)
     p.seat_count,
 
-    -- Billing dan (1-to-1, to'g'ri JOIN)
-    s.mrr,
-    s.status            as subscription_status,
-    s.is_past_due,
+    -- Support (aggregated — safe join)
+    coalesce(t.total_tickets, 0)                        as total_tickets,
+    coalesce(t.open_tickets, 0)                         as open_tickets,
+    coalesce(t.urgent_open_tickets, 0)                  as urgent_open_tickets,
+    t.avg_response_hours,
 
-    -- Support dan (agregatlangan, xavfsiz)
-    coalesce(t.total_tickets, 0)   as total_tickets,
-    coalesce(t.open_tickets, 0)    as open_tickets,
-    coalesce(t.urgent_tickets, 0)  as urgent_tickets
+    -- Finance (aggregated — safe join)
+    coalesce(i.overdue_invoices, 0)                     as overdue_invoices,
+    coalesce(i.zero_amount_invoices, 0)                 as zero_amount_invoices
 
 from accounts a
-left join product        p on p.account_id = a.id
-left join billing        s on s.account_id = a.id
-left join ticket_summary t on t.account_id = a.id
+left join subscriptions     s on s.account_id = a.id
+left join product_companies p on p.account_id = a.id
+left join ticket_summary    t on t.account_id = a.id
+left join invoice_summary   i on i.account_id = a.id

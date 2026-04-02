@@ -2,77 +2,86 @@ with account_health as (
     select * from {{ ref('int_account_health') }}
 ),
 
+-- 1:N → avval aggregate
 contacts as (
-    -- Har account uchun: nechta contact, kim primary
     select
         account_id,
-        count(distinct contact_id)              as total_contacts,
-        max(case when is_primary then first_name
-            || ' ' || last_name end)            as primary_contact_name,
-        max(case when is_primary then lead_source
-            end)                                as primary_lead_source
+        count(distinct contact_id)                      as total_contacts,
+        max(first_name || ' ' || last_name)
+            filter (where is_primary)                   as primary_contact_name,
+        max(lead_source)
+            filter (where is_primary)                   as primary_lead_source
     from {{ ref('int_contacts') }}
     group by account_id
 ),
 
+-- 1:N → avval aggregate
 opportunities as (
-    -- Har account uchun: pipeline holati
     select
         account_id,
         count(*) filter (
-            where stage not in ('closed_won','closed_lost')
-        )                                       as open_opportunities,
-        sum(amount) filter (
+            where stage not in ('closed_won', 'closed_lost')
+        )                                               as open_opportunities,
+        coalesce(sum(amount) filter (
             where stage = 'closed_won'
-        )                                       as total_won_amount,
+        ), 0)                                           as total_won_amount,
         max(close_date) filter (
             where stage = 'closed_won'
-        )                                       as last_won_date
+        )                                               as last_won_date
     from {{ ref('stg_opportunities') }}
     where not is_amount_null
     group by account_id
 )
 
 select
-    -- Identifikator
+    -- Identity
     ah.account_id,
     ah.account_name,
-    ah.product_plan,
+    ah.industry,
+    ah.country,
+
+    -- Billing
     ah.mrr,
-    ah.mrr * 12                                 as arr,
+    ah.mrr * 12                                         as arr,
+    ah.product_plan,
     ah.subscription_status,
+    ah.is_past_due,
+    ah.subscription_started_at,
+    ah.subscription_cancelled_at,
 
-    -- Segment: MRR ga qarab
+    -- Segment: coalesce(mrr,0) — NULL mrr → 'unmonetized', hech qachon NULL
     case
-        when ah.mrr >= 2000  then 'enterprise'
-        when ah.mrr >= 500   then 'mid_market'
-        when ah.mrr > 0      then 'smb'
-        else                      'unmonetized'
-    end                                         as account_segment,
+        when coalesce(ah.mrr, 0) >= 2000   then 'enterprise'
+        when coalesce(ah.mrr, 0) >= 500    then 'mid_market'
+        when coalesce(ah.mrr, 0) >  0      then 'smb'
+        else                                    'unmonetized'
+    end                                                 as account_segment,
 
-    -- Product faollik
+    -- Product signals
     ah.total_users,
     ah.active_users,
     ah.events_last_30d,
     ah.last_active_at,
 
-    -- Sog'liq
+    -- Health
     ah.health_status,
-    ah.overdue_invoices,
     ah.urgent_open_tickets,
+    ah.open_tickets,
+    ah.avg_response_hours,
+    ah.overdue_invoices,
 
     -- Contacts
-    c.total_contacts,
+    coalesce(c.total_contacts, 0)                       as total_contacts,
     c.primary_contact_name,
     c.primary_lead_source,
 
     -- Pipeline
-    coalesce(o.open_opportunities, 0)           as open_opportunities,
-    coalesce(o.total_won_amount, 0)             as total_won_amount,
+    coalesce(o.open_opportunities, 0)                   as open_opportunities,
+    coalesce(o.total_won_amount, 0)                     as total_won_amount,
     o.last_won_date,
 
     -- Metadata
-    current_timestamp                           as updated_at
+    current_timestamp                                   as updated_at
 
 from account_health ah
 left join contacts    c on c.account_id = ah.account_id

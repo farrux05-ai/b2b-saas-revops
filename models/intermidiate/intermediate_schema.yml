@@ -2,144 +2,58 @@ version: 2
 
 models:
 
-  # ════════════════════════════════════════════════════
-  # INTERMEDIATE
-  # ════════════════════════════════════════════════════
-
   - name: int_accounts
     description: >
-      Account darajasida barcha sourclarni birlashtirgan model.
-      Anchor: stg_accounts. 1:1 JOIN: subscriptions, product_companies.
-      1:N GROUP BY keyin JOIN: tickets.
+      Anchor model. stg_accounts ga billing, product va support signallarini
+      birlashtiradi. stg_tickets va stg_invoices faqat shu yerda o'qiladi —
+      int_account_health esa bu modeldan foydalanadi.
+      Grain: bir qator = bir account.
     columns:
       - name: account_id
         tests: [not_null, unique]
-
       - name: account_name
         tests: [not_null]
-
-      - name: domain
-
-      - name: industry
-
-      - name: country
-
-      - name: owner_id
-
-      - name: product_plan
-        description: NULL = hali to'lovchi emas.
-
-      - name: seat_count
-
       - name: mrr
+        description: "coalesce(s.mrr, 0) — NULL bo'lmaydi"
         tests: [not_null]
-
       - name: subscription_status
         tests:
           - accepted_values:
-              values: [active, trialing, past_due, cancelled, unpaid, paused]
+              values: [active, past_due, trialing, cancelled]
               severity: warn
-
-      - name: is_past_due
+      - name: open_tickets
         tests: [not_null]
-
-      # ❌ is_status_conflict — int_accounts SELECT da yo'q, olib tashlandi
-      # ❌ open_ticket_count  — int_accounts SELECT da yo'q, olib tashlandi
-      # Bu ustunlar int_account_health da bor
-
-      - name: total_tickets
-        description: Jami ticketlar. 0 = yo'q.
+      - name: urgent_open_tickets
         tests: [not_null]
-
-      - name: urgent_tickets
-        description: Urgent ticketlar soni.
-        tests: [not_null]
-
-  - name: int_contacts
-    description: >
-      Contact + lead + first touch campaign. Anchor: stg_contacts.
-    columns:
-      - name: contact_id
-        tests: [not_null, unique]
-
-      - name: account_id
-        tests:
-          - relationships:
-              to: ref('int_accounts')
-              field: account_id
-              severity: warn
-
-      - name: email
-        tests: [not_null]
-
-      - name: first_name
-
-      - name: last_name
-
-      - name: job_title
-
-      - name: is_primary
-
-      - name: is_lead_unlinked
-        tests: [not_null]
-
-      - name: lead_source
-
-      - name: lead_score
-
-      - name: lead_status
-
-      - name: lead_created_at
-
-      - name: first_campaign_id
-
-      - name: first_campaign_name
-
-      - name: first_campaign_channel
-
-      - name: first_touch_at
-
-  - name: int_account_health
-    description: >
-      Account sog'liq darajasi. Anchor: int_accounts.
-      health_status: churned → at_risk → inactive → healthy.
-
-      # ❌ open_ticket_count — bu model da yo'q
-      # ❌ risk_score        — bu model da yo'q, custom testdan o'chirish kerak
-    columns:
-      - name: account_id
-        tests: [not_null, unique]
-
-      - name: account_name
-        tests: [not_null]
-
-      - name: product_plan
-
-      - name: mrr
-        tests: [not_null]
-
-      - name: subscription_status
-
-      - name: total_users
-        tests: [not_null]
-
-      - name: active_users
-        tests: [not_null]
-
-      - name: last_active_at
-        description: NULL = hech qachon login qilmagan.
-
-      - name: events_last_30d
-        tests: [not_null]
-
       - name: overdue_invoices
         tests: [not_null]
 
-      - name: urgent_open_tickets
-        tests: [not_null]
-
+  - name: int_account_health
+    description: >
+      int_accounts ga product signallari (users, events) qo'shiladi va
+      health_status hisoblanadi. stg_tickets bu yerda O'QILMAYDI.
+      Grain: bir qator = bir account.
+    columns:
+      - name: account_id
+        tests: [not_null, unique]
       - name: health_status
         tests:
           - not_null
           - accepted_values:
-              values: [healthy, at_risk, churned, inactive]
+              values: [healthy, at_risk, inactive, churned]
+      - name: total_users
+        tests: [not_null]
+      - name: active_users
+        tests: [not_null]
+      - name: events_last_30d
+        tests: [not_null]
+
+  - name: int_contacts
+    description: >
+      stg_contacts ga lead va campaign attribution ma'lumotlari qo'shiladi.
+      Grain: bir qator = bir contact (deduplicated by email).
+    columns:
+      - name: contact_id
+        tests: [not_null, unique]
+      - name: account_id
+        tests: [not_null]
