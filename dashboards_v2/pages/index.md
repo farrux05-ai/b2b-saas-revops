@@ -1,4 +1,7 @@
 # RevOps Analytics Dashboard
+
+## Key Metrics
+
 ```sql revenue_summary
 select
   sum(mrr) as total_mrr,
@@ -7,11 +10,18 @@ select
 from dim_accounts
 ```
 
-<BigValue data={revenue_summary} value=total_mrr title="Total MRR" fmt="usd" />
-<BigValue data={revenue_summary} value=total_arr title="Total ARR" fmt="usd" />
-<BigValue data={revenue_summary} value=total_accounts title="Total Accounts" />
+<div class="metrics-grid">
+  <BigValue data={revenue_summary} value=total_mrr title="Total MRR" fmt="usd" />
+  <BigValue data={revenue_summary} value=total_arr title="Total ARR" fmt="usd" />
+  <BigValue data={revenue_summary} value=total_accounts title="Total Accounts" />
+</div>
 
-## MRR Trend
+---
+
+## Revenue Analysis
+
+### Monthly Recurring Revenue Trend
+
 ```sql mrr_trend
 select
   revenue_month,
@@ -22,9 +32,21 @@ group by revenue_month
 order by revenue_month
 ```
 
-<LineChart data={mrr_trend} x=revenue_month y=total_mrr title="Monthly Recurring Revenue" />
+<LineChart 
+  data={mrr_trend} 
+  x=revenue_month 
+  y=total_mrr 
+  title="Monthly MRR Growth"
+  lineColor="#2563eb"
+  fillColor="rgba(37, 99, 235, 0.1)"
+/>
 
-## Account Health
+---
+
+## Customer Health
+
+### Account Health Distribution
+
 ```sql health_distribution
 select
   health_status,
@@ -35,9 +57,20 @@ group by health_status
 order by account_count desc
 ```
 
-<BarChart data={health_distribution} x=health_status y=account_count title="Accounts by Health Status" />
+<BarChart 
+  data={health_distribution} 
+  x=health_status 
+  y=account_count 
+  title="Accounts by Health Status"
+  series=health_status
+/>
+
+---
 
 ## Sales Pipeline
+
+### Pipeline Funnel
+
 ```sql pipeline_funnel
 select
   funnel_stage,
@@ -48,4 +81,30 @@ group by funnel_stage
 order by funnel_stage
 ```
 
-<DataTable data={pipeline_funnel} />
+<DataTable 
+  data={pipeline_funnel} 
+  title="Sales Pipeline by Stage"
+  rows=15
+/>
+
+---
+
+## Marketing Campaigns
+
+```sql campaign_performance
+select
+  campaign_name,
+  sum(total_leads) as leads,
+  sum(total_conversions) as conversions,
+  sum(total_revenue) as revenue
+from fct_marketing_campaigns
+group by campaign_name
+order by revenue desc
+limit 10
+```
+
+<DataTable 
+  data={campaign_performance} 
+  title="Campaign Performance"
+  rows=10
+/>
