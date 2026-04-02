@@ -18,7 +18,7 @@ models:
     staging:
       +materialized: view
       +schema: staging
-    intermediate:
+    intermidiate:
       +materialized: view
       +schema: int
     marts:
@@ -35,7 +35,7 @@ tests:
       +schema: test_failures
 
     # Intermediate: error — JOIN mantiq buzilsa to'xtat
-    intermediate:
+    intermidiate:
       +severity: error
       +store_failures: true
       +schema: test_failures
