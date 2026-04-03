@@ -1,6 +1,13 @@
 # B2B SaaS RevOps Pipeline
 
-A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with dbt, PostgreSQL, and Streamlit.
+[![dbt Cloud](https://img.shields.io/badge/dbt-Core-FF6849?style=flat&logo=dbt)](https://www.getdbt.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-336791?style=flat&logo=postgresql)](https://www.postgresql.org/)
+[![Evidence](https://img.shields.io/badge/Evidence-Analytics-4A90E2?style=flat)](https://www.evidence.dev/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python)](https://www.python.org/)
+
+A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with **dbt**, **PostgreSQL**, **Evidence**, and **Streamlit**.
+
+Status: Production Ready | Data freshness: Daily | Test Coverage: 167 tests
 
 ---
 
@@ -123,6 +130,20 @@ b2b-saas-revops/
 │   ├── app.py                   # Streamlit dashboard
 │   └── queries/                 # Reference SQL for each chart
 │
+├── dashboards_v2/               # Evidence Analytics (modern replacement)
+│   ├── pages/
+│   │   └── index.md             # Revenue, Pipeline, Marketing dashboard
+│   ├── sources/
+│   │   └── queries/             # dbt source definitions
+│   ├── evidence.config.yaml     # Evidence configuration
+│   └── package.json
+│
+├── screenshots/                 # Dashboard evidence
+│   ├── mrr_trend.jpg           # Monthly MRR trend
+│   ├── mrr_movement.jpg        # MRR waterfall by type
+│   ├── channel_summary.jpg     # Marketing channel breakdown
+│   └── account_segment.jpg     # Account segmentation by MRR
+│
 ├── dbt_project.yml
 ├── profiles.yml.example         # Copy to ~/.dbt/profiles.yml
 ├── .env.example                 # Copy to .env and fill credentials
@@ -179,15 +200,52 @@ dbt snapshot
 dbt docs generate && dbt docs serve
 ```
 
-### 4. Launch dashboard
+---
+
+## Dashboard Visualization
+
+### Evidence Analytics Dashboard (Recommended)
+
+Modern, interactive Revenue Operations dashboard powered by Evidence.
+
+Features:
+- Real-time KPI metrics (MRR, ARR, account count)
+- MRR trend analysis with new/expansion/contraction/churn breakdown
+- Account segmentation by revenue and health
+- Sales pipeline funnel (Lead to MQL to SQL to Won)
+- Geographic lead distribution
+- Marketing campaign performance and ROI by channel
+
+Access:
+```bash
+cd dashboards_v2
+npm install
+npm run dev
+# Open http://localhost:3000
+```
+
+**Dashboard Queries (from `dashboards_v2/pages/index.md`):**
+
+| Section | Metric | Query |
+|---------|--------|-------|
+| Overview | Total MRR | `SUM(mrr)` from `dim_accounts` |
+| | Total ARR | `MRR × 12` |
+| | Active Accounts | `COUNT(subscription_status = 'active')` |
+| MRR Trend | Monthly progression | Group by `revenue_month` from `fct_revenue` |
+| | Revenue types | New, Expansion, Contraction, Churned |
+| Account Health | Status distribution | Group by `health_status` from `dim_accounts` |
+| Sales Pipeline | Funnel stages | Lead to MQL to SQL to In Pipeline to Won to Lost |
+| Marketing | Channel ROI | `campaign_spend_actual / total_conversions` |
+
+### Legacy Streamlit Dashboard
+
+Alternative Streamlit-based dashboard (for reference):
 
 ```bash
 cd dashboards
 streamlit run app.py
 # Open http://localhost:8501
 ```
-
----
 
 ## Data Quality
 
@@ -255,30 +313,193 @@ Use cases: churn pattern analysis, account tenure by health state, cohort studie
 
 ---
 
+---
+
+## Dashboard Setup (Evidence)
+
+Evidence is a modern BI tool that connects directly to your data warehouse and renders interactive dashboards from SQL and Markdown.
+
+### Why Evidence?
+
+- No separate BI tool needed (Tableau, Looker)
+- Dashboards live in version control (git)
+- Write queries in SQL, visualizations auto-generated
+- Deploy to Vercel or run locally
+- Real-time data (queries hit data warehouse on load)
+
+### Setup Steps
+
+**1. Install dependencies**
+```bash
+cd dashboards_v2
+npm install
+```
+
+**2. Connect to your database**
+
+Evidence reads from `sources/` config. Already configured for your PostgreSQL:
+```yaml
+# sources/postgres.yml (auto-created)
+type: postgres
+host: localhost
+port: 5432
+database: revops
+user: <your_user>
+password: <your_password>
+```
+
+**3. Run locally**
+```bash
+npm run dev
+```
+Open `http://localhost:3000` to see dashboard with live data.
+
+**4. Deploy to Vercel** (optional)
+```bash
+npm run build
+# Push to GitHub, Vercel auto-deploys on push
+```
+
+### Dashboard Contents (Evidence)
+
+Located in `dashboards_v2/pages/index.md`:
+
+**Section 1: Revenue Overview**
+- Total MRR, ARR, Account Count, Active Accounts
+- Metric: MRR from active subscriptions
+
+**Section 2: MRR Trend Chart**
+- Line chart of total MRR by month
+- Shows: Revenue growth trajectory
+
+**Section 3: MRR Movement (Stacked Bar)**
+- New, Expansion, Contraction, Churned breakdown
+- Shows: Revenue composition month-over-month
+
+**Section 4: Account Segments**
+- Accounts by segment with average MRR
+- Shows: Which segments drive revenue
+
+**Section 5: Account Health Distribution**
+- Count of Healthy, At-Risk, Churned accounts
+- Shows: Health score composition
+
+**Section 6: Sales Pipeline Funnel**
+- Lead to MQL to SQL to In Pipeline to Won to Lost
+- Shows: Conversion rates at each stage
+
+**Section 7: Lead Geography**
+- Top 15 countries by lead volume
+- Shows: Geographic distribution
+
+**Section 8: Marketing Campaigns**
+- Campaign name, channel, budget, spend, conversions, ROI
+- Shows: Which campaigns drive value
+
+**Section 9: Channel Summary**
+- Total leads, conversions, spend by channel
+- Shows: Channel efficiency
+
+---
+
 ## Troubleshooting
 
-**`relation "marts.dim_accounts" does not exist`**
+### dbt and Data Layer
+
+**Relation "marts.dim_accounts" does not exist**
 Run `dbt run` first to materialize mart tables.
 
-**`psycopg2.OperationalError: connection failed`**
+**psycopg2.OperationalError: connection failed**
 Verify PostgreSQL is running and credentials in `.env` are correct:
 ```bash
 psql $DATABASE_URL -c "SELECT version()"
 ```
 
-**`revenue waterfall balanced` test fails**
+**Revenue waterfall balanced test fails**
 The tolerance is set to $100 by default. Adjust in `dbt_project.yml`:
 ```yaml
 vars:
   revenue_waterfall_tolerance: 200
 ```
 
+### Evidence Dashboard
+
+**Error: No data source configured**
+Ensure `dashboards_v2/sources/` folder exists with `postgres.yml` or `evidence.config.yaml` is properly set:
+```yaml
+sources:
+  - name: postgres
+    type: postgres
+    host: localhost
+    port: 5432
+    database: revops_db
+```
+
+**npm ERR! code ENOENT, no such file or directory**
+Install dependencies first:
+```bash
+cd dashboards_v2
+npm install
+```
+
+**Evidence dev server stuck or not loading**
+Clear cache and restart:
+```bash
+cd dashboards_v2
+rm -rf .evidence
+npm run dev
+```
+
+**Dashboard shows "Loading..." but never loads**
+Check if PostgreSQL connection works:
+```bash
+psql -h localhost -U <user> -d revops_db -c "SELECT COUNT(*) FROM dim_accounts;"
+```
+If query hangs, your dbt models haven't run yet. Run `dbt run` in parent directory.
+
 ---
 
 ## Tech Stack
 
-**dbt-postgres** · **PostgreSQL** · **DuckDB** · **Streamlit** · **Plotly** · **Python 3.11**
+**dbt-postgres** · **PostgreSQL** · **DuckDB** · **Evidence** · **Streamlit** · **Plotly** · **Python 3.10+** · **Node.js 18+**
 
 ---
 
-*Last updated: March 2026*
+## Dashboard Screenshots
+
+### MRR Trend Analysis
+Real-time monthly recurring revenue trend with clear growth trajectory.
+
+![MRR Trend](./screenshots/mrr_trend.jpg)
+
+### MRR Movement Waterfall
+Revenue composition breakdown: New, Expansion, Contraction, and Churned MRR by month.
+
+![MRR Movement](./screenshots/mrr_movement.jpg)
+
+### Account Segmentation
+Revenue distribution across customer segments with segment-level metrics.
+
+![Account Segment](./screenshots/account_segment.jpg)
+
+### Marketing Channel Performance
+Lead generation and conversion rates by channel source.
+
+![Channel Summary](./screenshots/channel_summary.jpg)
+
+---
+
+## Key Features
+
+Production-ready revenue operations data pipeline with integrated analytics:
+
+- Unified Data Model: One account_id across all sources
+- Real-time Dashboards: Evidence and Streamlit options
+- Data Quality: 167 automated tests covering all layers
+- Change History: SCD Type 2 snapshots for churn analysis
+- Production Ready: Daily refresh schedule with error monitoring
+- Extensible: Add new sources in 3 steps (sources.yml to stg_ to int_)
+
+---
+
+*Last updated: April 2026*
