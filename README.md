@@ -1,13 +1,13 @@
 # B2B SaaS RevOps Pipeline
 
 [![dbt Cloud](https://img.shields.io/badge/dbt-Core-FF6849?style=flat&logo=dbt)](https://www.getdbt.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-336791?style=flat&logo=postgresql)](https://www.postgresql.org/)
+[![DuckDB](https://img.shields.io/badge/DuckDB-1.0+-FF6849?style=flat)](https://duckdb.org/)
 [![Evidence](https://img.shields.io/badge/Evidence-Analytics-4A90E2?style=flat)](https://www.evidence.dev/)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat&logo=python)](https://www.python.org/)
 
-A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with **dbt**, **PostgreSQL**, **duckdb**, **Evidence**.
+A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with **dbt**, **DuckDB**, and **Evidence**.
 
-Status: Production Ready | Data freshness: Daily | Test Coverage: 167 tests
+Status: Production Ready | Data freshness: Daily | Test Coverage: 158 tests | 22 models | 2 snapshots
 
 ---
 
@@ -149,17 +149,15 @@ b2b-saas-revops/
 ├── macros/
 │   └── postgres_source.sql      # DuckDB postgres_scan wrapper (reads DSN from env)
 │
-├── dashboards/
-│   ├── app.py                   # Streamlit dashboard
-│   └── queries/                 # Reference SQL for each chart
-│
-├── dashboards_v2/               # Evidence Analytics (modern replacement)
+├── dashboards_v2/               # Evidence Analytics (interactive BI dashboards)
 │   ├── pages/
-│   │   └── index.md             # Revenue, Pipeline, Marketing dashboard
+│   │   ├── index.md             # Revenue, Pipeline, and Account Health dashboard
+│   │   └── queries/             # SQL queries for each visualization
 │   ├── sources/
-│   │   └── queries/             # dbt source definitions
-│   ├── evidence.config.yaml     # Evidence configuration
-│   └── package.json
+│   │   └── revops/              # DuckDB connection configuration
+│   ├── evidence.config.yaml     # Evidence.dev configuration
+│   ├── package.json
+│   └── README.md
 │
 ├── screenshots/                 # Dashboard evidence
 │   ├── mrr_trend.jpg           # Monthly MRR trend
@@ -179,48 +177,52 @@ b2b-saas-revops/
 
 ### Prerequisites
 
-- Python 3.10+
-- PostgreSQL 13+
-- dbt-postgres 1.7+
+- Python 3.12+
+- dbt 1.7+
+- PostgreSQL 13+ (source - optional, can use any supported source)
 
 ### 1. Clone and install
 
 ```bash
 git clone https://github.com/farrux05-ai/b2b-saas-revops.git
-cd b2b-saas-revops
+cd b2b-saas-revops/revops_pipeline/revops_project
 
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+# Create and activate Python environment
+python -m venv dbt-venv
+source dbt-venv/bin/activate          # Windows: dbt-venv\Scripts\activate
 
+# Install dependencies
 pip install -r requirements.txt
 ```
 
 ### 2. Configure credentials
 
 ```bash
-# Project environment variables
-cp .env.example .env
-# Edit .env with your PostgreSQL credentials
-
-# dbt connection profile
-cp profiles.yml.example ~/.dbt/profiles.yml
-# Edit ~/.dbt/profiles.yml with your PostgreSQL credentials
+# Set environment variables for your data source
+export DBT_POSTGRES_USER=your_user
+export DBT_POSTGRES_PASSWORD=your_password
+export DBT_POSTGRES_HOST=localhost
+export DBT_POSTGRES_PORT=5432
 ```
 
 ### 3. Run the pipeline
 
 ```bash
+# Test connection
+dbt debug
+
 # Build all models
 dbt run
 
-# Run all data quality tests
+# Run all data quality tests (158 tests)
 dbt test
 
 # Build SCD Type 2 snapshots
 dbt snapshot
 
-# Explore lineage in browser
+# Explore data lineage in browser
 dbt docs generate && dbt docs serve
+# Open http://localhost:8080
 ```
 
 ---
@@ -252,23 +254,15 @@ npm run dev
 | Section | Metric | Query |
 |---------|--------|-------|
 | Overview | Total MRR | `SUM(mrr)` from `dim_accounts` |
-| | Total ARR | `MRR × 12` |
-| | Active Accounts | `COUNT(subscription_status = 'active')` |
+| | Total ARR | `SUM(arr)` from `dim_accounts` |
+| | Active Accounts | `COUNT(*)` where `subscription_status = 'active'` |
 | MRR Trend | Monthly progression | Group by `revenue_month` from `fct_revenue` |
-| | Revenue types | New, Expansion, Contraction, Churned |
-| Account Health | Status distribution | Group by `health_status` from `dim_accounts` |
-| Sales Pipeline | Funnel stages | Lead to MQL to SQL to In Pipeline to Won to Lost |
-| Marketing | Channel ROI | `campaign_spend_actual / total_conversions` |
+| | Revenue types | Breakdown: New, Expansion, Contraction, Churned |
+| Account Health | Status distribution | Count by `health_status` from `dim_accounts` |
+| Account Segment | Revenue segment performance | Distribution by `account_segment` (SMB, Mid-Market, Enterprise) |
+| Sales Pipeline | Deal progression | Count of opportunities by `funnel_stage` |
 
-### Legacy Streamlit Dashboard
-
-Alternative Streamlit-based dashboard (for reference):
-
-```bash
-cd dashboards
-streamlit run app.py
-# Open http://localhost:8501
-```
+---
 
 ## Data Quality
 
@@ -312,17 +306,6 @@ Use cases: churn pattern analysis, account tenure by health state, cohort studie
 
 ---
 
-## Production Schedule
-
-```bash
-# Rebuild pipeline every day at 2 AM
-0 2 * * * cd /app/b2b-saas-revops \
-  && source .venv/bin/activate \
-  && dbt run && dbt snapshot && dbt test
-```
-
----
-
 ## Key Metric Definitions
 
 | Metric | Formula |
@@ -336,174 +319,66 @@ Use cases: churn pattern analysis, account tenure by health state, cohort studie
 
 ---
 
----
-
-## Dashboard Setup (Evidence)
-
-Evidence is a modern BI tool that connects directly to your data warehouse and renders interactive dashboards from SQL and Markdown.
-
-### Why Evidence?
-
-- No separate BI tool needed (Tableau, Looker)
-- Dashboards live in version control (git)
-- Write queries in SQL, visualizations auto-generated
-- Deploy to Vercel or run locally
-- Real-time data (queries hit data warehouse on load)
-
-### Setup Steps
-
-**1. Install dependencies**
-```bash
-cd dashboards_v2
-npm install
-```
-
-**2. Connect to your database**
-
-Evidence reads from `sources/` config. Already configured for your PostgreSQL:
-```yaml
-# sources/postgres.yml (auto-created)
-type: postgres
-host: localhost
-port: 5432
-database: revops
-user: <your_user>
-password: <your_password>
-```
-
-**3. Run locally**
-```bash
-npm run dev
-```
-Open `http://localhost:3000` to see dashboard with live data.
-
-**4. Deploy to Vercel** (optional)
-```bash
-npm run build
-# Push to GitHub, Vercel auto-deploys on push
-```
-
-### Dashboard Contents (Evidence)
-
-Located in `dashboards_v2/pages/index.md`:
-
-**Section 1: Revenue Overview**
-- Total MRR, ARR, Account Count, Active Accounts
-- Metric: MRR from active subscriptions
-
-**Section 2: MRR Trend Chart**
-- Line chart of total MRR by month
-- Shows: Revenue growth trajectory
-
-**Section 3: MRR Movement (Stacked Bar)**
-- New, Expansion, Contraction, Churned breakdown
-- Shows: Revenue composition month-over-month
-
-**Section 4: Account Segments**
-- Accounts by segment with average MRR
-- Shows: Which segments drive revenue
-
-**Section 5: Account Health Distribution**
-- Count of Healthy, At-Risk, Churned accounts
-- Shows: Health score composition
-
-**Section 6: Sales Pipeline Funnel**
-- Lead to MQL to SQL to In Pipeline to Won to Lost
-- Shows: Conversion rates at each stage
-
-**Section 7: Lead Geography**
-- Top 15 countries by lead volume
-- Shows: Geographic distribution
-
-**Section 8: Marketing Campaigns**
-- Campaign name, channel, budget, spend, conversions, ROI
-- Shows: Which campaigns drive value
-
-**Section 9: Channel Summary**
-- Total leads, conversions, spend by channel
-- Shows: Channel efficiency
-
----
-
 ## Troubleshooting
 
-### dbt and Data Layer
+### dbt Setup Issues
 
-**Relation "marts.dim_accounts" does not exist**
-Run `dbt run` first to materialize mart tables.
-
-**psycopg2.OperationalError: connection failed**
-Verify PostgreSQL is running and credentials in `.env` are correct:
+**"dbt: command not found"**
+Make sure your virtual environment is activated:
 ```bash
-psql $DATABASE_URL -c "SELECT version()"
+source dbt-venv/bin/activate
 ```
 
-**Revenue waterfall balanced test fails**
-The tolerance is set to $100 by default. Adjust in `dbt_project.yml`:
+**"Relation "marts.dim_accounts" does not exist"**
+Run `dbt run` to build the models first.
+
+**"Environment variable DBT_POSTGRES_PASSWORD not set"**
+Set your PostgreSQL credentials:
+```bash
+export DBT_POSTGRES_USER=your_user
+export DBT_POSTGRES_PASSWORD=your_password
+```
+
+### Evidence Dashboard Issues
+
+**"Error: No data source configured"**
+Verify `dashboards_v2/sources/revops/connection.yaml` points to correct DuckDB path:
 ```yaml
-vars:
-  revenue_waterfall_tolerance: 200
+name: revops
+type: duckdb
+options:
+  filename: ../duckdb/revops_analytics.duckdb
 ```
 
-### Evidence Dashboard
-
-**Error: No data source configured**
-Ensure `dashboards_v2/sources/` folder exists with `postgres.yml` or `evidence.config.yaml` is properly set:
-```yaml
-sources:
-  - name: postgres
-    type: postgres
-    host: localhost
-    port: 5432
-    database: revops_db
-```
-
-**npm ERR! code ENOENT, no such file or directory**
+**"npm ERR! code ENOENT"**
 Install dependencies first:
 ```bash
 cd dashboards_v2
 npm install
 ```
 
-**Evidence dev server stuck or not loading**
-Clear cache and restart:
+**"Error loading data"**
+Make sure you've run the dbt pipeline first:
 ```bash
-cd dashboards_v2
-rm -rf .evidence
-npm run dev
+dbt run && dbt snapshot
 ```
-
-**Dashboard shows "Loading..." but never loads**
-Check if PostgreSQL connection works:
-```bash
-psql -h localhost -U <user> -d revops_db -c "SELECT COUNT(*) FROM dim_accounts;"
-```
-If query hangs, your dbt models haven't run yet. Run `dbt run` in parent directory.
 
 ---
 
 ## Tech Stack
 
-**dbt-postgres** · **PostgreSQL** · **DuckDB** · **Evidence** · **Streamlit** · **Plotly** · **Python 3.10+** · **Node.js 18+**
+- **Orchestration:** dbt 1.7+
+- **Data Warehouse:** DuckDB (local) / PostgreSQL (source)
+- **Analytics:** Evidence.dev
+- **Language:** SQL, Python 3.12
+- **Node.js:** 18+ (for Evidence dashboard)
 
 ---
 
-## Dashboard Screenshots
+## Documentation
 
-### MRR Trend Analysis
-Real-time monthly recurring revenue trend with clear growth trajectory.
-
-![MRR Trend](./screenshots/mrr_trend.jpg)
-
-### MRR Movement Waterfall
-Revenue composition breakdown: New, Expansion, Contraction, and Churned MRR by month.
-
-![MRR Movement](./screenshots/mrr_movement.jpg)
-
-### Account Segmentation
-Revenue distribution across customer segments with segment-level metrics.
-
-![Account Segment](./screenshots/account_segment.jpg)
+- [Case Study](./docs/CASE_STUDY.md) — Business impact and implementation story
+- [Technical Deep-Dive](./docs/TECHNICAL.md) — Architecture decisions and advanced topics
 
 ### Marketing Channel Performance
 Lead generation and conversion rates by channel source.
@@ -516,12 +391,12 @@ Lead generation and conversion rates by channel source.
 
 Production-ready revenue operations data pipeline with integrated analytics:
 
-- Unified Data Model: One account_id across all sources
-- Real-time Dashboards: Evidence and Streamlit options
-- Data Quality: 167 automated tests covering all layers
-- Change History: SCD Type 2 snapshots for churn analysis
-- Production Ready: Daily refresh schedule with error monitoring
-- Extensible: Add new sources in 3 steps (sources.yml to stg_ to int_)
+- **Unified Data Model:** One `account_id` across all sources (HubSpot, Stripe, Mixpanel, Intercom)
+- **Interactive Dashboards:** Evidence.dev dashboards for revenue, health, and pipeline analytics
+- **Comprehensive Testing:** 158 automated data quality tests across all layers
+- **Change Tracking:** SCD Type 2 snapshots for churn analysis and account history
+- **Production Ready:** Daily refresh schedule with error monitoring and test failures logged
+- **Extensible:** Add new sources in 3 steps (sources.yml → stg_* → int_*)
 
 ---
 

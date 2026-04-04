@@ -192,8 +192,8 @@ The CS team immediately:
 - CFO re-audited MRR calculations quarterly (found errors every time)
 
 **After:**
-- `dbt run` executes nightly → Evidence dashboard auto-updates
-- MRR calculated via tested SQL (167 dbt tests ensure accuracy)
+- `dbt run` executes nightly → Evidence.dev dashboard auto-updates
+- MRR calculated via tested SQL (158 dbt tests ensure accuracy)
 - Finance audit: Zero errors in Q1 close
 
 **Time saved:** 16 hours/month → **$3,200 annual cost savings** (assuming $200/hr fully-loaded CS Manager rate)
@@ -282,7 +282,7 @@ Instead, I shipped:
 **Mistake I avoided:** "Trust me, the data is clean."
 
 Instead, I wrote:
-- 167 dbt tests (unique, not_null, relationships, custom assertions)
+- 158 dbt tests (unique, not_null, relationships, custom assertions)
 - Test failures logged to `test_failures` schema
 - Evidence dashboard included a "Data Quality" page showing test results
 
