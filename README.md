@@ -13,7 +13,7 @@ Status: Production Ready | Data freshness: Daily | Test Coverage: 158 tests | 22
 
 ## System Architecture
 
-![B2B SaaS RevOps Architecture](./screenshots/b2b_saas_revops_architecture.svg)
+![B2B SaaS RevOps Architecture](./screenshots/b2b_saas_revops_architecture_evidence.svg)
 
 ### Architecture Overview
 
