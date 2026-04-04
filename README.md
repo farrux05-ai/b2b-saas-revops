@@ -380,8 +380,27 @@ dbt run && dbt snapshot
 - [Case Study](./docs/CASE_STUDY.md) — Business impact and implementation story
 - [Technical Deep-Dive](./docs/TECHNICAL.md) — Architecture decisions and advanced topics
 
-### Marketing Channel Performance
-Lead generation and conversion rates by channel source.
+---
+
+## Dashboard Screenshots
+
+### 1. MRR Trend Analysis
+Monthly recurring revenue trend with clear growth trajectory and visualization of revenue changes over time.
+
+![MRR Trend](./screenshots/mrr_trend.jpg)
+
+### 2. MRR Movement Waterfall
+Revenue composition breakdown showing New, Expansion, Contraction, and Churned MRR by month. Key metric for understanding revenue dynamics.
+
+![MRR Movement](./screenshots/mrr_movement.jpg)
+
+### 3. Account Segmentation  
+Revenue distribution and metrics across customer segments (SMB, Mid-Market, Enterprise) with average MRR per segment.
+
+![Account Segment](./screenshots/account_segment.jpg)
+
+### 4. Marketing Channel Performance
+Lead generation and conversion rates by channel source. ROI analysis for each marketing channel.
 
 ![Channel Summary](./screenshots/channel_summary.jpg)
 
