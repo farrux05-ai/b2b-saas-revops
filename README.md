@@ -11,6 +11,45 @@ Status: Production Ready | Data freshness: Daily | Test Coverage: 158 tests | 22
 
 ---
 
+## System Architecture
+
+![B2B SaaS RevOps Architecture](./screenshots/b2b_saas_revops_architecture.svg)
+
+### Architecture Overview
+
+This pipeline implements a **modern data stack** pattern with four key layers:
+
+1. **Data Ingestion (Data Sources)**
+   - **HubSpot**: CRM data (accounts, contacts, opportunities, subscription details)
+   - **Stripe**: Billing & payment information (invoices, subscriptions, charges)
+   - **Mixpanel**: Product usage analytics (user events, feature adoption)
+   - **Intercom**: Customer support tickets (issues, resolutions, interactions)
+
+2. **Raw Layer (PostgreSQL)**
+   - Immutable append-only storage of raw API data
+   - No transformations applied — data as-is from external sources
+   - Provides full audit trail for compliance and debugging
+
+3. **Transformation Layers (dbt)**
+   - **Staging (stg.\*)**: Type casting, cleaning, null handling, source documentation
+   - **Intermediate (int.\*)**: Business logic joins, complex calculations, fact assembly
+   - **Marts (marts.\*)**: Final aggregated tables optimized for analytics and BI consumption
+
+4. **Analytics Layer (Evidence)**
+   - Interactive dashboards and reports built from mart tables
+   - Real-time insights for revenue ops, sales, customer success, and finance teams
+   - Single source of truth for business metrics
+
+### Key Design Principles
+
+- **Account-Centric**: All data models pivot around `account_id` as the central grain
+- **Dimensional Modeling**: Star schema with clear dimension and fact tables
+- **SCD Type 2 Snapshots**: Track historical changes in critical dimensions (dim_accounts, fct_pipeline)
+- **Separation of Concerns**: Each layer has a single responsibility (raw → clean → transform → deliver)
+- **Testing & Documentation**: 158 tests ensure data quality; YAML documentation for traceability
+
+---
+
 ## The Problem
 
 Revenue teams at B2B SaaS companies face a critical challenge:
