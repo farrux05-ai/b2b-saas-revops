@@ -19,7 +19,8 @@ models:
       - name: subscription_status
         tests:
           - accepted_values:
-              values: [active, past_due, trialing, cancelled]
+              arguments:
+                values: [active, past_due, trialing, cancelled]
               severity: warn
       - name: open_tickets
         tests: [not_null]
@@ -40,7 +41,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: [healthy, at_risk, inactive, churned]
+              arguments:
+                values: [healthy, at_risk, inactive, churned]
       - name: total_users
         tests: [not_null]
       - name: active_users

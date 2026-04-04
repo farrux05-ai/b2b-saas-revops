@@ -5,7 +5,7 @@
 [![Evidence](https://img.shields.io/badge/Evidence-Analytics-4A90E2?style=flat)](https://www.evidence.dev/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python)](https://www.python.org/)
 
-A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with **dbt**, **PostgreSQL**, **Evidence**, and **Streamlit**.
+A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with **dbt**, **PostgreSQL**, **duckdb**, **Evidence**.
 
 Status: Production Ready | Data freshness: Daily | Test Coverage: 167 tests
 
@@ -13,16 +13,39 @@ Status: Production Ready | Data freshness: Daily | Test Coverage: 167 tests
 
 ## The Problem
 
-B2B SaaS companies accumulate data across four separate systems:
+Revenue teams at B2B SaaS companies face a critical challenge:
 
-| Team | Question | Where they look |
-|---|---|---|
-| Sales | "Is this account paid?" | Stripe (manually) |
-| Customer Success | "Are they using the product?" | Mixpanel (manually) |
-| Finance | "What's our MRR this month?" | Excel spreadsheet |
-| Leadership | "Where is revenue going?" | Nowhere — no unified view |
+**Sales asks:** "Is this $50K enterprise account paid up?"  
+→ *Must manually check Stripe*
 
-This pipeline joins all four sources around a single `account_id` key, building a unified mart layer that any BI tool can query.
+**Customer Success asks:** "Which accounts are at-risk of churning?"  
+→ *No visibility into product usage + payment behavior together*
+
+**Finance asks:** "What's our MRR growth this quarter?"  
+→ *4 hours of manual Excel work, prone to errors*
+
+**Leadership asks:** "Where should we focus expansion efforts?"  
+→ *Data scattered across 4 tools, no unified view*
+
+**The root cause:** Customer data lives in silos. Each team sees one dimension, nobody sees the full picture.
+
+---
+
+##  The Solution
+
+This pipeline creates a **single source of truth** by:
+
+1. **Unifying 4 data sources** around `account_id` as the central entity
+2. **Automating transformations** with dbt for consistent business logic  
+3. **Tracking history** with SCD Type 2 snapshots to understand lifecycle changes
+4. **Delivering insights** via Evidence.dev interactive reports
+
+### Business Impact
+
+- **MRR calculation:** 4 hours → 5 minutes (automated)
+- **Churn visibility:** Reactive → Proactive (identified $45K at-risk revenue)
+- **Decision speed:** Days → Real-time (live health scoring)
+- **Data trust:** Fragmented → Single source of truth
 
 ---
 

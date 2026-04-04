@@ -18,7 +18,8 @@ models:
       - name: status
         tests:
           - accepted_values:
-              values: [new, mql, sql, disqualified]
+              arguments:
+                values: [new, mql, sql, disqualified]
               severity: warn
 
       - name: lead_score
@@ -30,7 +31,8 @@ models:
           Qiymatlar: null_email, invalid_format, personal_domain.
         tests:
           - accepted_values:
-              values: [null_email, invalid_format, personal_domain]
+              arguments:
+                values: [null_email, invalid_format, personal_domain]
               severity: warn
 
       - name: source_null
@@ -58,13 +60,15 @@ models:
       - name: type
         tests:
           - accepted_values:
-              values: [paid_social, paid_search, event, outbound, seo, email]
+              arguments:
+                values: [paid_social, paid_search, event, outbound, seo, email]
               severity: warn
 
       - name: status
         tests:
           - accepted_values:
-              values: [draft, active, paused, completed]
+              arguments:
+                values: [draft, active, paused, completed]
               severity: warn
 
       - name: is_budget_null

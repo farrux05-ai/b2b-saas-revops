@@ -10,15 +10,17 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_accounts')
-              field: id
+              arguments:
+                to: ref('stg_accounts')
+                field: id
               severity: warn
 
       - name: status
         tests:
           - not_null
           - accepted_values:
-              values: [active, trialing, past_due, cancelled, unpaid, paused]
+              arguments:
+                values: [active, trialing, past_due, cancelled, unpaid, paused]
 
       - name: is_status_conflict
         tests: [not_null]
@@ -43,7 +45,8 @@ models:
       - name: status
         tests:
           - accepted_values:
-              values: [draft, open, paid, void, uncollectible]
+              arguments:
+                values: [draft, open, paid, void, uncollectible]
               severity: warn
 
       - name: is_overdue
@@ -69,7 +72,8 @@ models:
       - name: status
         tests:
           - accepted_values:
-              values: [succeeded, failed, refunded]
+              arguments:
+                values: [succeeded, failed, refunded]
               severity: warn
 
       - name: is_failed

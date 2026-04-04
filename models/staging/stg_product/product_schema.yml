@@ -10,14 +10,16 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_accounts')
-              field: id
+              arguments:
+                to: ref('stg_accounts')
+                field: id
               severity: warn
 
       - name: plan
         tests:
           - accepted_values:
-              values: [free, starter, growth, enterprise]
+              arguments:
+                values: [free, starter, growth, enterprise]
               severity: warn
 
       - name: is_plan_null
@@ -40,7 +42,8 @@ models:
       - name: status
         tests:
           - accepted_values:
-              values: [active, inactive, churned]
+              arguments:
+                values: [active, inactive, churned]
               severity: warn
 
       - name: is_signup_null

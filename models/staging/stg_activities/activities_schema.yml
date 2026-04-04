@@ -9,7 +9,8 @@ models:
       - name: type
         tests:
           - accepted_values:
-              values: [call, email, meeting, demo, note]
+              arguments:
+                values: [call, email, meeting, demo, note]
               severity: warn
 
       - name: is_type_null

@@ -10,20 +10,23 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_accounts')
-              field: id
+              arguments:
+                to: ref('stg_accounts')
+                field: id
               severity: warn
 
       - name: status
         tests:
           - accepted_values:
-              values: [open, pending, solved, closed]
+              arguments:
+                values: [open, pending, solved, closed]
               severity: warn
 
       - name: priority
         tests:
           - accepted_values:
-              values: [low, normal, high, urgent]
+              arguments:
+                values: [low, normal, high, urgent]
               severity: warn
 
       - name: is_no_response
@@ -50,13 +53,15 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_tickets')
-              field: id
+              arguments:
+                to: ref('stg_tickets')
+                field: id
 
       - name: author_type
         tests:
           - accepted_values:
-              values: [agent, customer]
+              arguments:
+                values: [agent, customer]
               severity: warn
 
       - name: is_author_null

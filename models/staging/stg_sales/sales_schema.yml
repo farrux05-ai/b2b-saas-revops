@@ -26,8 +26,9 @@ models:
       - name: account_id
         tests:
           - relationships:
-              to: ref('stg_accounts')
-              field: id
+              arguments:
+                to: ref('stg_accounts')
+                field: id
               severity: warn
 
       - name: is_lead_unlinked
@@ -45,14 +46,16 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_accounts')
-              field: id
+              arguments:
+                to: ref('stg_accounts')
+                field: id
 
       - name: stage
         tests:
           - not_null
           - accepted_values:
-              values: [prospecting, qualification, proposal, closed_won, closed_lost]
+              arguments:
+                values: [prospecting, qualification, proposal, closed_won, closed_lost]
               severity: warn
 
       - name: is_amount_null

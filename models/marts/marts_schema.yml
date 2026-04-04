@@ -49,8 +49,9 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_accounts')
-              field: account_id
+              arguments:
+                to: ref('dim_accounts')
+                field: account_id
       - name: revenue_month
         tests: [not_null]
       - name: mrr
