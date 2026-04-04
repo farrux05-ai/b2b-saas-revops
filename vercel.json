@@ -1,12 +1,6 @@
 {
   "buildCommand": "dbt docs generate",
   "outputDirectory": "target",
-  "env": {
-    "DBT_POSTGRES_HOST": "@POSTGRES_HOST",
-    "DBT_POSTGRES_USER": "@POSTGRES_USER",
-    "DBT_POSTGRES_PASSWORD": "@POSTGRES_PASSWORD",
-    "DBT_POSTGRES_PORT": "@POSTGRES_PORT"
-  },
   "installCommand": "pip install -r requirements.txt",
   "rewrites": [
     {
