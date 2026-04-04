@@ -1,7 +1,6 @@
 {
   "buildCommand": "dbt docs generate",
   "outputDirectory": "target",
-  "framework": "static",
   "env": {
     "DBT_POSTGRES_HOST": "@POSTGRES_HOST",
     "DBT_POSTGRES_USER": "@POSTGRES_USER",
