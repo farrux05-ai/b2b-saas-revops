@@ -1,7 +1,5 @@
 {
-  "buildCommand": "dbt docs generate --profiles-dir .",
   "outputDirectory": "target",
-  "installCommand": "pip install dbt-postgres",
   "rewrites": [
     {
       "source": "/(.*)",

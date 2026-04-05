@@ -1,5 +1,4 @@
 # ── dbt ───────────────────────────────────────────────
-target/
 dbt_packages/
 logs/
 *.log
@@ -42,8 +41,6 @@ dashboards/.env
 *.db
 *.sqlite
 *.sqlite3
-*.duckdb
-duckdb/
 
 # ── Node ──────────────────────────────────────────────
 node_modules/
