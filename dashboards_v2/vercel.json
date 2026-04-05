@@ -1,9 +1,6 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "build",
-  "env": {
-    "EVIDENCE_SOURCE_REVOPS_FILENAME": "@DUCKDB_PATH"
-  },
   "rewrites": [
     {
       "source": "/(.*)",
