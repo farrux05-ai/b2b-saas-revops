@@ -46,8 +46,9 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('dim_accounts')
-              field: account_id
+              arguments:
+                to: ref('dim_accounts')
+                field: account_id
       - name: revenue_month
         description: "Filtered by is not null in SQL"
       - name: mrr

@@ -39,8 +39,9 @@ models:
           - not_null
           - unique
           - relationships:
-              to: ref('int_accounts')
-              field: account_id
+              arguments:
+                to: ref('int_accounts')
+                field: account_id
       - name: health_status
         data_tests:
           - accepted_values:
@@ -63,5 +64,6 @@ models:
       - name: account_id
         data_tests:
           - relationships:
-              to: ref('int_accounts')
-              field: account_id
+              arguments:
+                to: ref('int_accounts')
+                field: account_id

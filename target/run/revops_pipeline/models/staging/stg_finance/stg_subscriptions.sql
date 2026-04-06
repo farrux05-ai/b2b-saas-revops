@@ -20,13 +20,21 @@ cleaned as(
     started_at,
     cancelled_at,
 
+    -- Data quality flag: status says 'active' but a cancellation date exists.
+    -- This is a CRM data entry error. Should be investigated and corrected at source.
     (status = 'active'
      AND cancelled_at IS NOT NULL)  AS is_status_conflict,
 
+    -- Revenue risk flag: subscription is past due.
+    -- Accounts with this flag need immediate follow-up from the collections or CSM team.
     (status = 'past_due')           AS is_past_due,
 
+    -- Revenue integrity flag: subscription is active but MRR is zero.
+    -- This likely indicates a free plan slipping through, a pricing config bug,
+    -- or a manual override. Directly inflates customer count without revenue contribution.
     (status NOT IN ('trialing','cancelled')
      AND mrr = 0)                   AS is_mrr_zero
+
 from subscriptions
 )
 select * from cleaned

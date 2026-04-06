@@ -5,10 +5,10 @@
     select * from "revops_analytics"."revops_staging"."stg_accounts"
 ),
 
--- 1:1 — bir accountda bir aktiv subscription
+-- 1:1 — one active subscription per account (exclude conflict rows)
 subscriptions as (
     select * from "revops_analytics"."revops_staging"."stg_subscriptions"
-    where not is_status_conflict
+    where not coalesce(is_status_conflict, false)
 ),
 
 -- 1:1 — Mixpanel company-level analytics
@@ -16,7 +16,7 @@ product_companies as (
     select * from "revops_analytics"."revops_staging"."stg_product_companies"
 ),
 
--- 1:N → aggregate first
+-- 1:N — aggregate before joining to avoid fan-out
 ticket_summary as (
     select
         account_id,
@@ -30,7 +30,7 @@ ticket_summary as (
     group by account_id
 ),
 
--- 1:N → aggregate first
+-- 1:N — aggregate before joining to avoid fan-out
 invoice_summary as (
     select
         account_id,
@@ -67,7 +67,7 @@ select
     s.cancelled_at                                      as subscription_cancelled_at,
 
     -- Product (1:1)
-    p.seat_count,
+    coalesce(p.seat_count, 0)                              as seat_count,
 
     -- Support (aggregated — safe join)
     coalesce(t.total_tickets, 0)                        as total_tickets,

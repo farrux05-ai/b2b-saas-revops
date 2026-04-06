@@ -11,7 +11,7 @@
     select * from "revops_analytics"."revops_int"."int_account_health"
 ),
 
--- 1:N → avval aggregate
+-- 1:N — aggregate first
 contacts as (
     select
         account_id,
@@ -24,7 +24,7 @@ contacts as (
     group by account_id
 ),
 
--- 1:N → avval aggregate
+-- 1:N — aggregate first
 opportunities as (
     select
         account_id,
@@ -58,7 +58,7 @@ select
     ah.subscription_started_at,
     ah.subscription_cancelled_at,
 
-    -- Segment: coalesce(mrr,0) — NULL mrr → 'unmonetized', hech qachon NULL
+    -- Segment: rely on COALESCE to avoid NULLs (NULL mrr → 'unmonetized')
     case
         when coalesce(ah.mrr, 0) >= 2000   then 'enterprise'
         when coalesce(ah.mrr, 0) >= 500    then 'mid_market'

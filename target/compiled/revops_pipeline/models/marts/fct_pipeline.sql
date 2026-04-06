@@ -1,9 +1,9 @@
--- Grain: bir qator = bir lead.
--- Lead → MQL → SQL → Opportunity → Won/Lost funnel.
+-- Grain: one row = one lead.
+-- Funnel stages: Lead → MQL → SQL → Opportunity → Won/Lost
 
 with leads as (
     select * from "revops_analytics"."revops_staging"."stg_leads"
-    -- faqat eng yangi email, valid email
+    -- filter canonical, valid emails only
     where email_row_num = 1
       and email_issue is null
 ),
@@ -12,7 +12,7 @@ opportunities as (
     select * from "revops_analytics"."revops_staging"."stg_opportunities"
 ),
 
--- Har lead uchun bitta contact (eng eski created_at)
+-- Link lead to an account by finding its earliest converted contact record
 contact_per_lead as (
     select distinct on (lead_id)
         lead_id,
@@ -22,11 +22,18 @@ contact_per_lead as (
     order by lead_id, created_at asc
 ),
 
--- FIX: Subquery o'rniga Primary Contact-larni oldindan ajratib olamiz
-primary_contacts as (
-    select *
-    from "revops_analytics"."revops_int"."int_contacts"
-    where is_primary = true
+-- Get attribution directly for the lead to avoid cross-contamination with other contacts
+first_touches as (
+    select distinct on (lead_id)
+        lead_id,
+        campaign_id
+    from "revops_analytics"."revops_staging"."stg_campaign_members"
+    where not is_touch_date_broken
+    order by lead_id, first_touch_at asc
+),
+
+campaigns as (
+    select * from "revops_analytics"."revops_staging"."stg_campaigns"
 ),
 
 funnel as (
@@ -39,9 +46,9 @@ funnel as (
         l.created_at::DATE                              as lead_created_at,
         l.country                                       as lead_country,
 
-        -- Campaign attribution
-        c.first_campaign_name,
-        c.first_campaign_channel,
+        -- Campaign attribution (Lead direct touch fallback)
+        coalesce(c.name, 'Organic')                     as first_campaign_name,
+        coalesce(c.channel, 'Direct')                   as first_campaign_channel,
 
         -- Account link
         cpl.account_id,
@@ -53,7 +60,7 @@ funnel as (
         o.close_date::DATE                              as close_date,
         o.created_at::DATE                              as opportunity_created_at,
 
-        -- Funnel stage: priority tartibida
+        -- Funnel stage evaluated in priority order
         case
             when o.stage = 'closed_won'     then 'won'
             when o.stage = 'closed_lost'    then 'lost'
@@ -63,7 +70,7 @@ funnel as (
             else                                 'lead'
         end                                             as funnel_stage,
 
-        -- FIX: DuckDB uchun sana ayirmasi (extract shart emas)
+        -- Date diff logic
         case
             when o.created_at is not null
             then (o.created_at::DATE - l.created_at::DATE)
@@ -76,8 +83,8 @@ funnel as (
 
     from leads l
     left join contact_per_lead cpl on cpl.lead_id = l.id
-    -- FIX: Correlated subquery JOIN ga almashtirildi
-    left join primary_contacts c   on c.account_id = cpl.account_id
+    left join first_touches ft     on ft.lead_id = l.id
+    left join campaigns c          on c.id = ft.campaign_id
     left join opportunities o      on o.lead_id = l.id
 )
 
