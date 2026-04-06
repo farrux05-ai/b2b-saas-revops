@@ -4,18 +4,18 @@ models:
   - name: stg_accounts
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: name
-        tests: [not_null]
+        data_tests: [not_null]
 
   - name: stg_contacts
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: account_id
-        tests:
+        data_tests:
           - relationships:
               arguments:
                 to: ref('stg_accounts')
@@ -25,10 +25,10 @@ models:
   - name: stg_opportunities
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: account_id
-        tests:
+        data_tests:
           - not_null
           - relationships:
               arguments:
@@ -36,7 +36,7 @@ models:
                 field: id
 
       - name: stage
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               arguments:

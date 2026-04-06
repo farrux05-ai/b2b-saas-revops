@@ -7,10 +7,10 @@ models:
       Score and status mismatches are flagged.
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: status
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [new, mql, sql, disqualified]
@@ -20,32 +20,32 @@ models:
         description: >
           NULL means no issue.
           Possible values: null_email, invalid_format, personal_domain.
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [null_email, invalid_format, personal_domain]
               severity: warn
 
       - name: created_at
-        tests: [not_null]
+        data_tests: [not_null]
 
   - name: stg_campaigns
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: name
-        tests: [not_null]
+        data_tests: [not_null]
 
       - name: type
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [paid_social, paid_search, event, outbound, seo, email]
               severity: warn
 
       - name: status
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [draft, active, paused, completed]
@@ -54,10 +54,10 @@ models:
   - name: stg_campaign_members
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: lead_id
-        tests: [not_null]
+        data_tests: [not_null]
 
       - name: campaign_id
-        tests: [not_null]
+        data_tests: [not_null]

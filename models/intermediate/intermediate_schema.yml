@@ -10,24 +10,24 @@ models:
       Grain: bir qator = bir account.
     columns:
       - name: account_id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
       - name: account_name
-        tests: [not_null]
+        data_tests: [not_null]
       - name: mrr
         description: "coalesce(s.mrr, 0) — NULL bo'lmaydi"
-        tests: [not_null]
+        data_tests: [not_null]
       - name: subscription_status
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [active, past_due, trialing, cancelled]
               severity: warn
       - name: open_tickets
-        tests: [not_null]
+        data_tests: [not_null]
       - name: urgent_open_tickets
-        tests: [not_null]
+        data_tests: [not_null]
       - name: overdue_invoices
-        tests: [not_null]
+        data_tests: [not_null]
 
   - name: int_account_health
     description: >
@@ -36,19 +36,19 @@ models:
       Grain: bir qator = bir account.
     columns:
       - name: account_id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
       - name: health_status
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [healthy, at_risk, inactive, churned]
       - name: total_users
-        tests: [not_null]
+        data_tests: [not_null]
       - name: active_users
-        tests: [not_null]
+        data_tests: [not_null]
       - name: events_last_30d
-        tests: [not_null]
+        data_tests: [not_null]
 
   - name: int_contacts
     description: >
@@ -56,6 +56,6 @@ models:
       Grain: bir qator = bir contact (deduplicated by email).
     columns:
       - name: contact_id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
       - name: account_id
-        tests: [not_null]
+        data_tests: [not_null]

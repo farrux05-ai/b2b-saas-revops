@@ -6,85 +6,85 @@ models:
       Account ning joriy holati. Grain: bir qator = bir account.
     columns:
       - name: account_id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
       - name: account_name
-        tests: [not_null]
+        data_tests: [not_null]
       - name: mrr
-        tests: [not_null]
+        data_tests: [not_null]
       - name: arr
         description: "mrr * 12. Faqat shu bir joyda hisoblanadi."
-        tests: [not_null]
+        data_tests: [not_null]
       - name: account_segment
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               arguments: # <--- FIX: dbt 1.7+ uchun arguments qo'shildi
                 values: [enterprise, mid_market, smb, unmonetized]
       - name: health_status
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [healthy, at_risk, inactive, churned]
       - name: subscription_status
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [active, past_due, trialing, cancelled]
               severity: warn
       - name: total_contacts
-        tests: [not_null]
+        data_tests: [not_null]
       - name: open_opportunities
-        tests: [not_null]
+        data_tests: [not_null]
       - name: total_won_amount
-        tests: [not_null]
+        data_tests: [not_null]
       - name: updated_at
-        tests: [not_null]
+        data_tests: [not_null]
 
   - name: fct_revenue
     description: >
       Oylik MRR waterfall. Grain: bir qator = account × oy.
     columns:
       - name: account_id
-        tests:
+        data_tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_accounts')
                 field: account_id
       - name: revenue_month
-        tests: [not_null]
+        data_tests: [not_null]
       - name: mrr
-        tests: [not_null]
+        data_tests: [not_null]
       - name: arr
-        tests: [not_null]
+        data_tests: [not_null]
       - name: mrr_type
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [new, expansion, contraction, stable, churned, trial]
       - name: updated_at
-        tests: [not_null]
+        data_tests: [not_null]
 
   - name: fct_pipeline
     description: >
       Lead → won sales funnel. Grain: bir qator = bir lead.
     columns:
       - name: lead_id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
       - name: email
-        tests: [not_null]
+        data_tests: [not_null]
       - name: lead_created_at
-        tests: [not_null]
+        data_tests: [not_null]
       - name: funnel_stage
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [lead, mql, sql, in_pipeline, won, lost]
       - name: lead_score
-        tests: [not_null]
+        data_tests: [not_null]
       - name: days_lead_to_opp
         description: "Lead yaratilgandan opportunity yaratilgunga qadar kunlar."
       - name: days_opp_to_close
@@ -92,4 +92,4 @@ models:
       - name: opportunity_id
         description: "Lead bog'langan opportunity ID-si."
       - name: updated_at
-        tests: [not_null]
+        data_tests: [not_null]

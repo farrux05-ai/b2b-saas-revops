@@ -4,10 +4,10 @@ models:
   - name: stg_subscriptions
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: account_id
-        tests:
+        data_tests:
           - not_null
           - relationships:
               arguments:
@@ -16,7 +16,7 @@ models:
               severity: warn
 
       - name: status
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               arguments:
@@ -25,16 +25,16 @@ models:
   - name: stg_invoices
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: subscription_id
-        tests: [not_null]
+        data_tests: [not_null]
 
       - name: account_id
-        tests: [not_null]
+        data_tests: [not_null]
 
       - name: status
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [draft, open, paid, void, uncollectible]
@@ -43,16 +43,16 @@ models:
   - name: stg_payments
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: invoice_id
-        tests: [not_null]
+        data_tests: [not_null]
 
       - name: account_id
-        tests: [not_null]
+        data_tests: [not_null]
 
       - name: status
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [succeeded, failed, refunded]

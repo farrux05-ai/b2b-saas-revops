@@ -4,10 +4,10 @@ models:
   - name: stg_tickets
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: account_id
-        tests:
+        data_tests:
           - not_null
           - relationships:
               arguments:
@@ -16,14 +16,14 @@ models:
               severity: warn
 
       - name: status
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [open, pending, solved, closed]
               severity: warn
 
       - name: priority
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [low, normal, high, urgent]
@@ -32,10 +32,10 @@ models:
   - name: stg_ticket_comments
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: ticket_id
-        tests:
+        data_tests:
           - not_null
           - relationships:
               arguments:
@@ -43,7 +43,7 @@ models:
                 field: id
 
       - name: author_type
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [agent, customer]

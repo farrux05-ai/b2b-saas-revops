@@ -4,10 +4,10 @@ models:
   - name: stg_product_companies
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: account_id
-        tests:
+        data_tests:
           - not_null
           - relationships:
               arguments:
@@ -16,7 +16,7 @@ models:
               severity: warn
 
       - name: plan
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [free, starter, growth, enterprise]
@@ -25,13 +25,13 @@ models:
   - name: stg_product_users
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
 
       - name: account_id
-        tests: [not_null]
+        data_tests: [not_null]
 
       - name: status
-        tests:
+        data_tests:
           - accepted_values:
               arguments:
                 values: [active, inactive, churned]
@@ -40,4 +40,4 @@ models:
   - name: stg_product_events
     columns:
       - name: id
-        tests: [not_null, unique]
+        data_tests: [not_null, unique]
