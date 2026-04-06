@@ -1,6 +1,6 @@
 
   
-  create view "revops_analytics"."marts_staging"."stg_subscriptions__dbt_tmp" as (
+  create view "revops_analytics"."revops_staging"."stg_subscriptions__dbt_tmp" as (
     with subscriptions as(
     SELECT * FROM postgres_scan(
   'dbname=revops_database user=farrux password=farrux05 host=localhost port=5432',

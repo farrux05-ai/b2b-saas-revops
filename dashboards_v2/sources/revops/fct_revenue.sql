@@ -1,1 +1,1 @@
-select * from marts_marts.fct_revenue
+select * from revops_marts.fct_revenue

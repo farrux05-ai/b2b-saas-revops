@@ -2,15 +2,11 @@ version: 2
 
 sources:
   - name: revops_raw
-    database: "postgres"
+    database: "revops_database"
     schema: raw
     description: >
-      Postgres-dagi xom ma'lumotlar manba.
-      DuckDB postgres extension orqali o'qiladi.
-      Hech qachon to'g'ridan o'zgartirish kiritilmaydi — append-only.
-    
-    meta:
-      external_location: "postgres://farrux:farrux05@localhost:5432/revops_database"
+      Raw data source from Postgres.
+      Never mutated directly — append-only.
 
     freshness:
       warn_after: { count: 24, period: hour }
@@ -20,40 +16,40 @@ sources:
     tables:
       # ── Marketing ─────────────────────────────────────
       - name: leads
-        description: HubSpot form submissions va inbound leadlar
+        description: HubSpot form submissions and inbound leads
         freshness:
           warn_after: { count: 6, period: hour }
 
       - name: campaigns
-        description: HubSpot marketing campaigns — budget, sana, kanal
+        description: HubSpot marketing campaigns — budget, date, channel
 
       - name: campaign_members
-        description: Qaysi lead qaysi campaign da qatnashgan (ko'prik)
+        description: Which lead participated in which campaign (bridge table)
 
       # ── CRM ───────────────────────────────────────────
       - name: accounts
-        description: HubSpot companies — B2B da asosiy entity
+        description: HubSpot companies — core entity in B2B
         freshness:
           warn_after: { count: 6, period: hour }
 
       - name: contacts
-        description: HubSpot contacts — accountga bog'liq odamlar
+        description: HubSpot contacts — people associated with an account
 
       - name: opportunities
-        description: HubSpot deals — sotuv pipeline
+        description: HubSpot deals — sales pipeline
 
       - name: activities
-        description: HubSpot engagements — call, email, meeting loglari
+        description: HubSpot engagements — call, email, meeting logs
 
       # ── Product ───────────────────────────────────────
       - name: product_companies
-        description: Mixpanel group analytics — account darajasida usage
+        description: Mixpanel group analytics — usage at the account level
 
       - name: product_users
-        description: Mixpanel user profiles — kim qachon login qildi
+        description: Mixpanel user profiles — who logged in and when
 
       - name: product_events
-        description: Mixpanel raw events — har xil action loglari
+        description: Mixpanel raw events — various action logs
         freshness:
           warn_after: { count: 2, period: hour }
 
@@ -62,19 +58,19 @@ sources:
         description: Stripe subscriptions — plan, MRR, status
 
       - name: invoices
-        description: Stripe invoices — har oylik hisob-kitob
+        description: Stripe invoices — monthly billing
 
       - name: payments
-        description: Stripe payment_intents — muvaffaqiyatli va failed to'lovlar
+        description: Stripe payment_intents — successful and failed payments
 
       # ── Support ───────────────────────────────────────
       - name: tickets
-        description: Intercom conversations — support so'rovlari
+        description: Intercom conversations — support requests
 
       - name: ticket_comments
-        description: Intercom conversation parts — xabarlar tarixi
+        description: Intercom conversation parts — message history
 
-      # ── Infratuzilma ──────────────────────────────────
+      # ── Infrastructure ────────────────────────────────
       - name: dead_letter
-        description: Ingestion xatolari — monitoring uchun
-        freshness: null  # monitoring jadvali, freshness shart emas
+        description: Ingestion errors — for monitoring
+        freshness: null  # monitoring table, freshness not required

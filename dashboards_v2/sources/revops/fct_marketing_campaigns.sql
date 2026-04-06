@@ -1,1 +1,1 @@
-select * from marts_marts.fct_marketing_campaigns
+select * from revops_marts.fct_marketing_campaigns

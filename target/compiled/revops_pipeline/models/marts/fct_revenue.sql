@@ -1,11 +1,11 @@
 with subscriptions as (
-    select * from "revops_database"."raw_staging"."stg_subscriptions"
+    select * from "revops_analytics"."revops_staging"."stg_subscriptions"
     where not is_status_conflict
 ),
 
 accounts as (
     select account_id, account_name, account_segment
-    from "revops_database"."raw_marts"."dim_accounts"
+    from "revops_analytics"."revops_marts"."dim_accounts"
 ),
 
 -- Har subscription uchun oldingi oyni olamiz

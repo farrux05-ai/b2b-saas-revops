@@ -1,6 +1,6 @@
 
   
-  create view "revops_analytics"."marts_staging"."stg_leads__dbt_tmp" as (
+  create view "revops_analytics"."revops_staging"."stg_leads__dbt_tmp" as (
     with leads as
 (
   select * from postgres_scan(

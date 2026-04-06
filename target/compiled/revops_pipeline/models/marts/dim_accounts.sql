@@ -1,5 +1,5 @@
 with account_health as (
-    select * from "revops_database"."raw_int"."int_account_health"
+    select * from "revops_analytics"."revops_int"."int_account_health"
 ),
 
 -- 1:N → avval aggregate
@@ -11,7 +11,7 @@ contacts as (
             filter (where is_primary)                   as primary_contact_name,
         max(lead_source)
             filter (where is_primary)                   as primary_lead_source
-    from "revops_database"."raw_int"."int_contacts"
+    from "revops_analytics"."revops_int"."int_contacts"
     group by account_id
 ),
 
@@ -28,7 +28,7 @@ opportunities as (
         max(close_date) filter (
             where stage = 'closed_won'
         )                                               as last_won_date
-    from "revops_database"."raw_staging"."stg_opportunities"
+    from "revops_analytics"."revops_staging"."stg_opportunities"
     where not is_amount_null
     group by account_id
 )

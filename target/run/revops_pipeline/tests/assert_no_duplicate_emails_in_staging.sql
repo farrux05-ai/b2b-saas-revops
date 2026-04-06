@@ -16,7 +16,7 @@
 -- Qator qaytarsa → test FAIL.
 
 SELECT email, COUNT(*) AS cnt
-FROM "revops_analytics"."marts_staging"."stg_contacts"
+FROM "revops_analytics"."revops_staging"."stg_contacts"
 WHERE email_row_num = 1
   AND email IS NOT NULL
 GROUP BY email

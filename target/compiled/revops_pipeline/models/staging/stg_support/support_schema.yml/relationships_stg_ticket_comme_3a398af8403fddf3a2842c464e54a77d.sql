@@ -4,13 +4,13 @@
 
 with child as (
     select ticket_id as from_field
-    from "revops_database"."raw_staging"."stg_ticket_comments"
+    from "revops_analytics"."revops_staging"."stg_ticket_comments"
     where ticket_id is not null
 ),
 
 parent as (
     select id as to_field
-    from "revops_database"."raw_staging"."stg_tickets"
+    from "revops_analytics"."revops_staging"."stg_tickets"
 )
 
 select

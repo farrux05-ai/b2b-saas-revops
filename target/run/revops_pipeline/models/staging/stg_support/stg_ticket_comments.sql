@@ -1,6 +1,6 @@
 
   
-  create view "revops_analytics"."marts_staging"."stg_ticket_comments__dbt_tmp" as (
+  create view "revops_analytics"."revops_staging"."stg_ticket_comments__dbt_tmp" as (
     with ticket_comments as (
     select * from postgres_scan(
   'dbname=revops_database user=farrux password=farrux05 host=localhost port=5432',

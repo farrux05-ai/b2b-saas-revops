@@ -8,7 +8,7 @@ with all_values as (
         status as value_field,
         count(*) as n_records
 
-    from "revops_database"."raw_staging"."stg_product_users"
+    from "revops_analytics"."revops_staging"."stg_product_users"
     group by status
 
 )

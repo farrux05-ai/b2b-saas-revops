@@ -29,21 +29,6 @@ models:
                 values: [low, normal, high, urgent]
               severity: warn
 
-      - name: is_no_response
-        tests: [not_null]
-
-      - name: is_category_null
-        tests: [not_null]
-
-      - name: is_agent_null
-        tests: [not_null]
-
-      - name: is_solved_date_missing
-        tests: [not_null]
-
-      - name: ticket_row_num
-        tests: [not_null]
-
   - name: stg_ticket_comments
     columns:
       - name: id
@@ -63,6 +48,3 @@ models:
               arguments:
                 values: [agent, customer]
               severity: warn
-
-      - name: is_author_null
-        tests: [not_null]

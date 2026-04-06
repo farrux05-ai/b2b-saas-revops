@@ -7,7 +7,7 @@
     from (
       
         select *
-        from "revops_analytics"."marts_test_failures"."accepted_values_stg_leads_status__new__mql__sql__disqualified"
+        from "revops_analytics"."revops_test_failures"."accepted_values_stg_leads_status__new__mql__sql__disqualified"
     
       
     ) dbt_internal_test

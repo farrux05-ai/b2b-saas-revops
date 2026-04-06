@@ -1,1 +1,1 @@
-select * from marts_marts.fct_pipeline
+select * from revops_marts.fct_pipeline

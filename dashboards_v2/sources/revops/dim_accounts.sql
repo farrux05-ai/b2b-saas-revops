@@ -1,1 +1,1 @@
-select * from marts_marts.dim_accounts
+select * from revops_marts.dim_accounts

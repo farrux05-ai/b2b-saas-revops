@@ -5,7 +5,7 @@
 
 
 select *
-from "revops_database"."raw_staging"."stg_campaigns"
+from "revops_analytics"."revops_staging"."stg_campaigns"
 where name is null
 
 

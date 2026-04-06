@@ -5,7 +5,7 @@
 
 
 select *
-from "revops_database"."raw_staging"."stg_accounts"
+from "revops_analytics"."revops_staging"."stg_accounts"
 where id is null
 
 

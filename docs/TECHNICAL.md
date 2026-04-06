@@ -532,6 +532,24 @@ dbt test --select tag:critical  # Fail fast
 
 ---
 
+### Source Freshness Strategy
+
+In B2B SaaS, data latency impacts business decisions differently depending on the domain. Our `dbt source freshness` configuration in `sources.yml` is tailored to these business SLAs rather than using a blanket rule for everything.
+
+**1. Default Catch-All (24h Warn / 48h Error)**
+Most raw tables have a global rule: warn after 24 hours, error after 48 hours. This handles typical daily batch syncs where a one-day delay is acceptable, but a two-day delay indicates a systemic pipeline failure.
+
+**2. Product Events (2h Warn)**
+Mixpanel product events (`product_events`) have a strict 2-hour warning threshold. Since product usage data is streaming, a 2-hour gap indicates that the ingestion pipeline is stuck. This must be alerted immediately before the delay cascades into downstream aggregations.
+
+**3. CRM & Marketing (6h Warn)**
+HubSpot entities like `leads` and `accounts` have a 6-hour warning threshold. Sales representatives rely on fast lead distribution algorithms. If leads are not surfacing in the warehouse for 6 hours, sales outreach SLAs will be breached.
+
+**4. Ignored Entities (null)**
+Tables like `dead_letter` (used for capturing ingestion errors) are explicitly set to `freshness: null`. Errors do not occur on a reliable cadence. It is completely normal for a dead letter table to receive no new data for weeks, so setting a freshness threshold here would trigger false positive alerts.
+
+---
+
 ## Evidence.dev Integration
 
 ### Connection Setup
@@ -744,6 +762,22 @@ columns:
 ```
 
 **Rule:** Test primary keys, foreign keys, and critical business metrics. Don't test everything.
+
+---
+
+### Pitfall 5: dbt source freshness with DuckDB-Postgres scan
+
+**Error:**
+```
+Runtime Error in source activities (models/sources.yml)
+Binder Error: Catalog "revops_database" does not exist!
+```
+
+**Cause:** The architecture uses a custom `postgres_source()` macro (which wraps DuckDB's `postgres_scan()`) to read data directly from Postgres during `dbt run`. However, `dbt source freshness` bypasses custom macros and tries to run a generic `SELECT MAX(_loaded_at)` natively against the catalog defined in `sources.yml`. Because the Postgres database isn't fully `ATTACH`ed to DuckDB internally (it's only read ad-hoc via the macro), DuckDB throws a Catalog error.
+
+**Solution:**
+- **Option A (Skip):** Usually in this hybrid OLAP setup, data ingestion pipelines (like Fivetran/Airbyte) have their own freshness monitoring. You can safely skip running `dbt source freshness` and let `dbt run` proceed smoothly.
+- **Option B (Architectural Shift):** If dbt-level freshness checks are absolutely critical, you must refactor the architecture. Remove `postgres_scan()` macros and instead mount the Postgres database explicitly using the `attach:` configuration parameter in `profiles.yml` (available in dbt-duckdb 1.8+).
 
 ---
 

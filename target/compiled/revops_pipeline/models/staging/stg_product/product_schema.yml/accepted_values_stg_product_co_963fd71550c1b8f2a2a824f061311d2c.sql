@@ -8,7 +8,7 @@ with all_values as (
         plan as value_field,
         count(*) as n_records
 
-    from "revops_database"."raw_staging"."stg_product_companies"
+    from "revops_analytics"."revops_staging"."stg_product_companies"
     group by plan
 
 )

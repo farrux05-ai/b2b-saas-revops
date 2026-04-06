@@ -15,7 +15,7 @@ WITH campaigns AS (
         is_budget_null,
         is_date_broken,
         spend_pct
-    FROM "revops_database"."raw_staging"."stg_campaigns"
+    FROM "revops_analytics"."revops_staging"."stg_campaigns"
 ),
 
 campaign_members AS (
@@ -29,7 +29,7 @@ campaign_members AS (
         converted,
         created_at AS campaign_member_created_at,
         is_touch_date_broken
-    FROM "revops_database"."raw_staging"."stg_campaign_members"
+    FROM "revops_analytics"."revops_staging"."stg_campaign_members"
 ),
 
 leads AS (
@@ -49,7 +49,7 @@ leads AS (
         email_issue,
         source_null,
         score_status_mismatch
-    FROM "revops_database"."raw_staging"."stg_leads"
+    FROM "revops_analytics"."revops_staging"."stg_leads"
 )
 
 SELECT

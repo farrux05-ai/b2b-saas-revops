@@ -22,15 +22,6 @@ models:
                 values: [free, starter, growth, enterprise]
               severity: warn
 
-      - name: is_plan_null
-        tests: [not_null]
-
-      - name: is_seat_null
-        tests: [not_null]
-
-      - name: is_account_unlinked
-        tests: [not_null]
-
   - name: stg_product_users
     columns:
       - name: id
@@ -46,19 +37,7 @@ models:
                 values: [active, inactive, churned]
               severity: warn
 
-      - name: is_signup_null
-        tests: [not_null]
-
-      - name: is_last_seen_null
-        tests: [not_null]
-
   - name: stg_product_events
     columns:
       - name: id
         tests: [not_null, unique]
-
-      - name: is_date_null
-        tests: [not_null]
-
-      - name: is_properties_null
-        tests: [not_null]

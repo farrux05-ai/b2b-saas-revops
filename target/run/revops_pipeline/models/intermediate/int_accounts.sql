@@ -1,19 +1,19 @@
 
   
-  create view "revops_analytics"."marts_int"."int_accounts__dbt_tmp" as (
+  create view "revops_analytics"."revops_int"."int_accounts__dbt_tmp" as (
     with accounts as (
-    select * from "revops_analytics"."marts_staging"."stg_accounts"
+    select * from "revops_analytics"."revops_staging"."stg_accounts"
 ),
 
 -- 1:1 — bir accountda bir aktiv subscription
 subscriptions as (
-    select * from "revops_analytics"."marts_staging"."stg_subscriptions"
+    select * from "revops_analytics"."revops_staging"."stg_subscriptions"
     where not is_status_conflict
 ),
 
 -- 1:1 — Mixpanel company-level analytics
 product_companies as (
-    select * from "revops_analytics"."marts_staging"."stg_product_companies"
+    select * from "revops_analytics"."revops_staging"."stg_product_companies"
 ),
 
 -- 1:N → aggregate first
@@ -26,7 +26,7 @@ ticket_summary as (
             where status = 'open' and priority = 'urgent'
         )                                               as urgent_open_tickets,
         avg(hours_to_first_response)                    as avg_response_hours
-    from "revops_analytics"."marts_staging"."stg_tickets"
+    from "revops_analytics"."revops_staging"."stg_tickets"
     group by account_id
 ),
 
@@ -36,7 +36,7 @@ invoice_summary as (
         account_id,
         count(*) filter (where is_overdue)              as overdue_invoices,
         count(*) filter (where is_zero_amount)          as zero_amount_invoices
-    from "revops_analytics"."marts_staging"."stg_invoices"
+    from "revops_analytics"."revops_staging"."stg_invoices"
     group by account_id
 )
 

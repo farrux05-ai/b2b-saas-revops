@@ -5,7 +5,7 @@
 
 
 select *
-from "revops_database"."raw_staging"."stg_product_companies"
+from "revops_analytics"."revops_staging"."stg_product_companies"
 where account_id is null
 
 

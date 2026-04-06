@@ -2,14 +2,14 @@
 -- Lead → MQL → SQL → Opportunity → Won/Lost funnel.
 
 with leads as (
-    select * from "revops_database"."raw_staging"."stg_leads"
+    select * from "revops_analytics"."revops_staging"."stg_leads"
     -- faqat eng yangi email, valid email
     where email_row_num = 1
       and email_issue is null
 ),
 
 opportunities as (
-    select * from "revops_database"."raw_staging"."stg_opportunities"
+    select * from "revops_analytics"."revops_staging"."stg_opportunities"
 ),
 
 -- Har lead uchun bitta contact (eng eski created_at)
@@ -17,7 +17,7 @@ contact_per_lead as (
     select distinct on (lead_id)
         lead_id,
         account_id
-    from "revops_database"."raw_staging"."stg_contacts"
+    from "revops_analytics"."revops_staging"."stg_contacts"
     where lead_id is not null
     order by lead_id, created_at asc
 ),
@@ -25,7 +25,7 @@ contact_per_lead as (
 -- FIX: Subquery o'rniga Primary Contact-larni oldindan ajratib olamiz
 primary_contacts as (
     select *
-    from "revops_database"."raw_int"."int_contacts"
+    from "revops_analytics"."revops_int"."int_contacts"
     where is_primary = true
 ),
 

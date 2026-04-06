@@ -1,10 +1,10 @@
 with contacts as (
-    select * from "revops_database"."raw_staging"."stg_contacts"
+    select * from "revops_analytics"."revops_staging"."stg_contacts"
     where email_row_num = 1
 ),
 
 leads as (
-    select * from "revops_database"."raw_staging"."stg_leads"
+    select * from "revops_analytics"."revops_staging"."stg_leads"
     where email_row_num = 1
       and email_issue is null
 ),
@@ -14,13 +14,13 @@ first_touch as (
         lead_id,
         campaign_id,
         first_touch_at
-    from "revops_database"."raw_staging"."stg_campaign_members"
+    from "revops_analytics"."revops_staging"."stg_campaign_members"
     where not is_touch_date_broken
     order by lead_id, first_touch_at asc
 ),
 
 campaigns as (
-    select * from "revops_database"."raw_staging"."stg_campaigns"
+    select * from "revops_analytics"."revops_staging"."stg_campaigns"
 )
 
 select

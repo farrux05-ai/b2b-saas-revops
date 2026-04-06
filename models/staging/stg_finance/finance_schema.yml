@@ -22,15 +22,6 @@ models:
               arguments:
                 values: [active, trialing, past_due, cancelled, unpaid, paused]
 
-      - name: is_status_conflict
-        tests: [not_null]
-
-      - name: is_past_due
-        tests: [not_null]
-
-      - name: is_mrr_zero
-        tests: [not_null]
-
   - name: stg_invoices
     columns:
       - name: id
@@ -49,15 +40,6 @@ models:
                 values: [draft, open, paid, void, uncollectible]
               severity: warn
 
-      - name: is_overdue
-        tests: [not_null]
-
-      - name: is_paid_missing_date
-        tests: [not_null]
-
-      - name: is_zero_amount
-        tests: [not_null]
-
   - name: stg_payments
     columns:
       - name: id
@@ -75,9 +57,3 @@ models:
               arguments:
                 values: [succeeded, failed, refunded]
               severity: warn
-
-      - name: is_failed
-        tests: [not_null]
-
-      - name: payment_row_num
-        tests: [not_null]

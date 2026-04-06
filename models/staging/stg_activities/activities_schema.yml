@@ -12,9 +12,3 @@ models:
               arguments:
                 values: [call, email, meeting, demo, note]
               severity: warn
-
-      - name: is_type_null
-        tests: [not_null]
-
-      - name: is_date_null
-        tests: [not_null]

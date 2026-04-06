@@ -7,7 +7,7 @@
     from (
       
         select *
-        from "revops_analytics"."marts_test_failures"."accepted_values_stg_activities_18300eb86a0108a2e3bf87be575b46eb"
+        from "revops_analytics"."revops_test_failures"."accepted_values_stg_activities_18300eb86a0108a2e3bf87be575b46eb"
     
       
     ) dbt_internal_test

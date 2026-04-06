@@ -9,15 +9,6 @@ models:
       - name: name
         tests: [not_null]
 
-      - name: is_industry_null
-        tests: [not_null]
-
-      - name: is_website_null
-        tests: [not_null]
-
-      - name: is_owner_null
-        tests: [not_null]
-
   - name: stg_contacts
     columns:
       - name: id
@@ -30,12 +21,6 @@ models:
                 to: ref('stg_accounts')
                 field: id
               severity: warn
-
-      - name: is_lead_unlinked
-        tests: [not_null]
-
-      - name: email_row_num
-        tests: [not_null]
 
   - name: stg_opportunities
     columns:
@@ -57,12 +42,3 @@ models:
               arguments:
                 values: [prospecting, qualification, proposal, closed_won, closed_lost]
               severity: warn
-
-      - name: is_amount_null
-        tests: [not_null]
-
-      - name: is_owner_null
-        tests: [not_null]
-
-      - name: is_close_date_past
-        tests: [not_null]

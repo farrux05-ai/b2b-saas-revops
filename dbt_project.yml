@@ -12,7 +12,7 @@ macro-paths: ["macros"]
 target-path: "target"
 clean-targets: ["target", "dbt_packages"]
 
-# ── Model konfiguratsiyalari ──────────────────────────
+# ── Model Configurations ──────────────────────────────
 models:
   revops_pipeline:
     staging:
@@ -25,22 +25,22 @@ models:
       +materialized: table
       +schema: marts
 
-# ── Test konfiguratsiyalari ───────────────────────────
+# ── Test Configurations ───────────────────────────────
 tests:
   revops_pipeline:
-    # Staging: warn — data kelayotgan bo'lsa to'xtatmaymiz
+    # Staging: warn — don't stop if data is flowing
     staging:
       +severity: warn
-      +store_failures: true       # failures ni DB ga yozadi — monitoring uchun
+      +store_failures: true       # failures written in DB — for monitoring
       +schema: test_failures
 
-    # Intermediate: error — JOIN mantiq buzilsa to'xtat
+    # Intermediate: error — stop if JOIN logic fails
     intermediate:
       +severity: error
       +store_failures: true
       +schema: test_failures
 
-    # Marts: error — BI noto'g'ri data ko'rmasin
+    # Marts: error — don't show incorrect data to BI
     marts:
       +severity: error
       +store_failures: true
@@ -48,7 +48,7 @@ tests:
 
 # ── Vars ─────────────────────────────────────────────
 vars:
-  # int_account_health da ishlatiladi
+  # Used in int_account_health
   inactive_days_threshold: 30
   at_risk_response_hours: 24
   at_risk_open_tickets: 3

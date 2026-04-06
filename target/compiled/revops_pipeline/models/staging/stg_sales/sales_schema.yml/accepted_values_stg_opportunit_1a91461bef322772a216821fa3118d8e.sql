@@ -8,7 +8,7 @@ with all_values as (
         stage as value_field,
         count(*) as n_records
 
-    from "revops_database"."raw_staging"."stg_opportunities"
+    from "revops_analytics"."revops_staging"."stg_opportunities"
     group by stage
 
 )

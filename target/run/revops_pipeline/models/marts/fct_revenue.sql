@@ -4,17 +4,17 @@
     
 
     create  table
-      "revops_analytics"."marts_marts"."fct_revenue__dbt_tmp"
+      "revops_analytics"."revops_marts"."fct_revenue__dbt_tmp"
   
     as (
       with subscriptions as (
-    select * from "revops_analytics"."marts_staging"."stg_subscriptions"
+    select * from "revops_analytics"."revops_staging"."stg_subscriptions"
     where not is_status_conflict
 ),
 
 accounts as (
     select account_id, account_name, account_segment
-    from "revops_analytics"."marts_marts"."dim_accounts"
+    from "revops_analytics"."revops_marts"."dim_accounts"
 ),
 
 -- Har subscription uchun oldingi oyni olamiz

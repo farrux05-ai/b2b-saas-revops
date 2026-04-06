@@ -7,7 +7,7 @@
     from (
       
         select *
-        from "revops_analytics"."marts_test_failures"."unique_stg_product_events_id"
+        from "revops_analytics"."revops_test_failures"."unique_stg_product_events_id"
     
       
     ) dbt_internal_test

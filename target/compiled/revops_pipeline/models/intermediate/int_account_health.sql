@@ -1,5 +1,5 @@
 with accounts as (
-    select * from "revops_database"."raw_int"."int_accounts"
+    select * from "revops_analytics"."revops_int"."int_accounts"
 ),
 
 -- Product users — account darajasida aggregate
@@ -11,7 +11,7 @@ users as (
             where status = 'active'
         )                                               as active_users,
         max(last_seen_at)                               as last_active_at
-    from "revops_database"."raw_staging"."stg_product_users"
+    from "revops_analytics"."revops_staging"."stg_product_users"
     group by account_id
 ),
 
@@ -23,8 +23,8 @@ events as (
             where pe.occurred_at >= now() - interval '30 days'
               and not pe.is_date_null
         )                                               as events_last_30d
-    from "revops_database"."raw_staging"."stg_product_events" pe
-    join "revops_database"."raw_staging"."stg_product_users"  pu on pu.id = pe.user_id
+    from "revops_analytics"."revops_staging"."stg_product_events" pe
+    join "revops_analytics"."revops_staging"."stg_product_users"  pu on pu.id = pe.user_id
     group by pu.account_id
 )
 
