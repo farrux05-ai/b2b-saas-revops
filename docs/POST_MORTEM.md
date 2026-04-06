@@ -126,7 +126,69 @@ All schema YAML files used the old `tests:` key for column-level data tests. Sta
 ---
 
 ## Layer 2: Intermediate
-*To be filled as we review this layer.*
+
+### PM-009 · NULL trap on boolean filter in int_accounts
+**Severity:** High  
+**Layer:** Intermediate / int_accounts  
+**Status:** Fixed
+
+The query filtered subscriptions with `where not is_status_conflict`. Because SQL's three-valued logic evaluates `NOT NULL` as `NULL`, any row where `is_status_conflict` was NULL was being silently dropped from the dataset, causing accounts to lose their active subscriptions.
+
+**Fix:** Changed the filter to `where not coalesce(is_status_conflict, false)` to safely handle NULL flags.
+
+**Rule to remember:** Never use `NOT boolean_column` without a `COALESCE` if the column isn't strictly guaranteed to be non-null. 
+
+---
+
+### PM-010 · Double table scan of stg_product_users causing performance drag
+**Severity:** Medium (Performance)  
+**Layer:** Intermediate / int_account_health  
+**Status:** Fixed
+
+The `stg_product_users` model was read once in the `users` CTE for aggregations, and a second time in the `events` CTE. Unless materialized as a table/view beforehand, dbt runs would execute the staging logic twice, causing unnecessary warehouse reads.
+
+**Fix:** Created a `raw_users` CTE at the top and referenced it in both downstream CTEs (`users` and `events`) to ensure a single logical read.
+
+**Rule to remember:** If you need the same staging model multiple times in the same intermediate query, wrap it in a root CTE and reference that CTE.
+
+---
+
+### PM-011 · Silent loss of campaign_id on soft-deleted campaigns
+**Severity:** High  
+**Layer:** Intermediate / int_contacts  
+**Status:** Fixed
+
+The model joined `first_touch` with `campaigns` to pull campaign metadata. It mapped the final campaign ID using `cmp.id as first_campaign_id`. If a campaign was soft-deleted or missing from the `campaigns` table, `cmp.id` returned NULL, silently wiping out the tracking ID even though `first_touch.campaign_id` had the correct raw ID. 
+
+**Fix:** Used `coalesce(cmp.id, ft.campaign_id) as first_campaign_id` to fall back to the raw tracking ID if the dimension record was missing.
+
+**Rule to remember:** When joining a fact/touch layer to a dimension layer via LEFT JOIN, always coalesce the dimension ID with the fact ID to preserve tracking data when dimension records go missing.
+
+---
+
+### PM-012 · Flawed logic for 'inactive' health status
+**Severity:** Medium (Logic)  
+**Layer:** Intermediate / int_account_health  
+**Status:** Fixed
+
+An account was marked `inactive` if it hadn't been logged into for 30 days AND its `subscription_status = 'active'`. This meant that `trialing` users who abandoned the product were falsely classified as `healthy` instead of `inactive`.
+
+**Fix:** Expanded the logic to `and a.subscription_status in ('active', 'trialing')`.
+
+**Rule to remember:** When defining business logic exclusions based on statuses, always ask "what other statuses exist?" (active vs past_due vs trialing vs cancelled).
+
+---
+
+### PM-013 · Incorrect referential integrity assumptions in schema tests
+**Severity:** Medium  
+**Layer:** Intermediate / intermediate_schema.yml  
+**Status:** Fixed
+
+`int_contacts` applied a `not_null` test on `account_id`, assuming all contacts belong to an account. In reality, standalone contacts (not yet associated with an account) can exist. Furthermore, despite being heavily join-dependent, none of the intermediate models (`int_contacts`, `int_account_health`) had `relationships` tests enforcing that their `account_id` actually existed in the `int_accounts` anchor model.
+
+**Fix:** Removed the strict `not_null` test from `int_contacts.account_id` and added `relationships` tests mapping `account_id` directly to `ref('int_accounts')`.
+
+**Rule to remember:** Test the relationships between your models, not just their staging counterparts. If a model relies on an anchor model, add a relationship test.
 
 ---
 

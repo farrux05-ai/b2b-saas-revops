@@ -38,9 +38,11 @@ select
     l.status                    as lead_status,
     l.created_at                as lead_created_at,
 
-    cmp.id                      as first_campaign_id,
-    cmp.name                    as first_campaign_name,
-    cmp.channel                 as first_campaign_channel
+    -- If the campaign record was deleted, fall back to the raw campaign_id from the touch record
+    -- to avoid losing attribution data silently
+    coalesce(cmp.id, ft.campaign_id)    as first_campaign_id,
+    cmp.name                            as first_campaign_name,
+    cmp.channel                         as first_campaign_channel
 
 from contacts c
 left join leads l        on l.id = c.lead_id

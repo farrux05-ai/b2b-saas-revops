@@ -4,17 +4,17 @@ models:
 
   - name: int_accounts
     description: >
-      Anchor model. stg_accounts ga billing, product va support signallarini
-      birlashtiradi. stg_tickets va stg_invoices faqat shu yerda o'qiladi —
-      int_account_health esa bu modeldan foydalanadi.
-      Grain: bir qator = bir account.
+      Anchor model. Combines billing, product, and support signals to stg_accounts.
+      stg_tickets and stg_invoices are only read here, and int_account_health
+      uses this model downstream.
+      Grain: one row = one account.
     columns:
       - name: account_id
         data_tests: [not_null, unique]
       - name: account_name
         data_tests: [not_null]
       - name: mrr
-        description: "coalesce(s.mrr, 0) — NULL bo'lmaydi"
+        description: "coalesce(s.mrr, 0) — never NULL"
         data_tests: [not_null]
       - name: subscription_status
         data_tests:
@@ -31,12 +31,17 @@ models:
 
   - name: int_account_health
     description: >
-      int_accounts ga product signallari (users, events) qo'shiladi va
-      health_status hisoblanadi. stg_tickets bu yerda O'QILMAYDI.
-      Grain: bir qator = bir account.
+      Adds product signals (users, events) to int_accounts and calculates
+      the health_status. stg_tickets is NOT read here.
+      Grain: one row = one account.
     columns:
       - name: account_id
-        data_tests: [not_null, unique]
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_accounts')
+              field: account_id
       - name: health_status
         data_tests:
           - not_null
@@ -52,10 +57,13 @@ models:
 
   - name: int_contacts
     description: >
-      stg_contacts ga lead va campaign attribution ma'lumotlari qo'shiladi.
-      Grain: bir qator = bir contact (deduplicated by email).
+      Adds lead and campaign attribution data to stg_contacts.
+      Grain: one row = one contact (deduplicated by email).
     columns:
       - name: contact_id
         data_tests: [not_null, unique]
       - name: account_id
-        data_tests: [not_null]
+        data_tests:
+          - relationships:
+              to: ref('int_accounts')
+              field: account_id
