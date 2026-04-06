@@ -31,7 +31,7 @@ events as (
     select
         ru.account_id,
         count(pe.id) filter (
-            where pe.occurred_at >= now() - interval '30 days'
+            where pe.occurred_at >= now() - interval '{{ var("inactive_days_threshold") }} days'
               and not pe.is_date_null
         )                                               as events_last_30d
     from {{ ref('stg_product_events') }} pe
@@ -68,16 +68,19 @@ select
     u.last_active_at,
     coalesce(e.events_last_30d, 0)                      as events_last_30d,
 
-    -- Health score: evaluated in priority order with explicit rules
+    -- Health score: evaluated in priority order with explicit rules using dbt vars
     case
         when a.subscription_status = 'cancelled'
             then 'churned'
         when a.is_past_due
           or a.urgent_open_tickets > 0
           or a.overdue_invoices > 0
+          or a.avg_response_hours > {{ var('at_risk_response_hours') }}
+          or a.open_tickets > {{ var('at_risk_open_tickets') }}
+          or (u.last_active_at is not null and u.last_active_at < now() - interval '{{ var("at_risk_days_since_active") }} days')
             then 'at_risk'
         when u.last_active_at is not null
-         and u.last_active_at < now() - interval '30 days'
+         and u.last_active_at < now() - interval '{{ var("inactive_days_threshold") }} days'
          and a.subscription_status in ('active', 'trialing')
             then 'inactive'
         else 'healthy'
