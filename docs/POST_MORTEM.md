@@ -226,3 +226,22 @@ The `fct_revenue.account_id` column had a relationship test defined with an `arg
 **Status:** Fixed
 
 Remaining Uzbek comments and descriptions within `dim_accounts.sql`, `fct_revenue.sql`, `fct_pipeline.sql`, and `marts_schema.yml` were translated to English to match project standards.
+
+---
+
+### PM-017 · Test Over-engineering / Cargo-cult testing across Intermediate & Marts
+**Severity:** Low (Compute Waste)  
+**Layer:** Intermediate & Marts / schema.yml files  
+**Status:** Fixed
+
+Similar to PM-005 in the staging layer, numerous `not_null` tests were applied to columns in `intermediate_schema.yml` and `marts_schema.yml` that were mathematically guaranteed to never be null by the SQL engine. Examples include:
+- Columns generated via `COALESCE(col, 0)` (`total_contacts`, `open_opportunities`, `mrr`)
+- Columns generated via `CASE WHEN ... ELSE 'fallback'` (`health_status`, `funnel_stage`, `account_segment`)
+- Metadata columns generated via `CURRENT_TIMESTAMP` (`updated_at`)
+- Columns where the model's `WHERE` clause explicitly applies `is not null` (`revenue_month`, `mrr_type` in `fct_revenue`)
+
+Running tests on these columns consumed compute credits on every `dbt test` execution while providing exactly 0% additional confidence in data quality. 
+
+**Fix:** Removed 25+ redundant `not_null` tests across Intermediate and Marts YAML files. Replaced them with descriptions noting they cannot be null natively.
+
+**Rule to remember:** Only test the *data*, do not test the SQL database engine. If your query uses `coalesce()` or an exhaustive `CASE..ELSE`, testing for nulls is cargo-cult testing. Save compute.

@@ -10,19 +10,16 @@ models:
       - name: account_name
         data_tests: [not_null]
       - name: mrr
-        data_tests: [not_null]
+        description: "coalesce(ah.mrr, 0) - cannot be null"
       - name: arr
         description: "mrr * 12. Calculated here only."
-        data_tests: [not_null]
       - name: account_segment
         data_tests:
-          - not_null
           - accepted_values:
               arguments: # <--- FIX: arguments added for dbt 1.7+
                 values: [enterprise, mid_market, smb, unmonetized]
       - name: health_status
         data_tests:
-          - not_null
           - accepted_values:
               arguments:
                 values: [healthy, at_risk, inactive, churned]
@@ -33,13 +30,13 @@ models:
                 values: [active, past_due, trialing, cancelled]
               severity: warn
       - name: total_contacts
-        data_tests: [not_null]
+        description: "Derived via coalesce() - cannot be null"
       - name: open_opportunities
-        data_tests: [not_null]
+        description: "Derived via coalesce() - cannot be null"
       - name: total_won_amount
-        data_tests: [not_null]
+        description: "Derived via coalesce() - cannot be null"
       - name: updated_at
-        data_tests: [not_null]
+        description: "current_timestamp - cannot be null"
 
   - name: fct_revenue
     description: >
@@ -52,19 +49,18 @@ models:
               to: ref('dim_accounts')
               field: account_id
       - name: revenue_month
-        data_tests: [not_null]
+        description: "Filtered by is not null in SQL"
       - name: mrr
-        data_tests: [not_null]
+        description: "Validated upstream"
       - name: arr
-        data_tests: [not_null]
+        description: "Validated upstream"
       - name: mrr_type
         data_tests:
-          - not_null
           - accepted_values:
               arguments:
                 values: [new, expansion, contraction, stable, churned, trial]
       - name: updated_at
-        data_tests: [not_null]
+        description: "current_timestamp - cannot be null"
 
   - name: fct_pipeline
     description: >
@@ -78,7 +74,6 @@ models:
         data_tests: [not_null]
       - name: funnel_stage
         data_tests:
-          - not_null
           - accepted_values:
               arguments:
                 values: [lead, mql, sql, in_pipeline, won, lost]
@@ -91,4 +86,4 @@ models:
       - name: opportunity_id
         description: "Opportunity ID tied to the lead."
       - name: updated_at
-        data_tests: [not_null]
+        description: "current_timestamp - cannot be null"

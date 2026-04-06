@@ -15,7 +15,6 @@ models:
         data_tests: [not_null]
       - name: mrr
         description: "coalesce(s.mrr, 0) — never NULL"
-        data_tests: [not_null]
       - name: subscription_status
         data_tests:
           - accepted_values:
@@ -23,11 +22,11 @@ models:
                 values: [active, past_due, trialing, cancelled]
               severity: warn
       - name: open_tickets
-        data_tests: [not_null]
+        description: "Derived via coalesce() - cannot be null"
       - name: urgent_open_tickets
-        data_tests: [not_null]
+        description: "Derived via coalesce() - cannot be null"
       - name: overdue_invoices
-        data_tests: [not_null]
+        description: "Derived via coalesce() - cannot be null"
 
   - name: int_account_health
     description: >
@@ -44,16 +43,15 @@ models:
               field: account_id
       - name: health_status
         data_tests:
-          - not_null
           - accepted_values:
               arguments:
                 values: [healthy, at_risk, inactive, churned]
       - name: total_users
-        data_tests: [not_null]
+        description: "Derived via coalesce() - cannot be null"
       - name: active_users
-        data_tests: [not_null]
+        description: "Derived via coalesce() - cannot be null"
       - name: events_last_30d
-        data_tests: [not_null]
+        description: "Derived via coalesce() - cannot be null"
 
   - name: int_contacts
     description: >
