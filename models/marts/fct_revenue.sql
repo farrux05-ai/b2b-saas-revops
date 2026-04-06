@@ -8,7 +8,7 @@ accounts as (
     from {{ ref('dim_accounts') }}
 ),
 
--- Har subscription uchun oldingi oyni olamiz
+-- Get previous month MRR and status per account via window functions
 with_prev as (
     select
         coalesce(date_trunc('month', started_at), current_date) as revenue_month,
@@ -39,8 +39,8 @@ monthly_revenue as (
         mrr,
         prev_mrr,
 
-        -- mrr_type: to'g'ri mantiq
-        -- prev_mrr NULL = bu account birinchi marta ko'rinyapti
+        -- MRR type classification
+        -- prev_mrr IS NULL indicates new revenue
         case
             when status = 'cancelled'                                       then 'churned'
             when status = 'trialing'                                        then 'trial'
@@ -67,7 +67,7 @@ select
     mr.prev_mrr,
     mr.mrr - coalesce(mr.prev_mrr, 0)                        as mrr_change,
 
-    -- Shu oydagi toplam metrikalar (BI waterfall uchun)
+    -- Aggregated monthly metrics (used for BI waterfall charts)
     sum(mr.mrr) over (
         partition by mr.revenue_month
     )                                                        as total_mrr_that_month,

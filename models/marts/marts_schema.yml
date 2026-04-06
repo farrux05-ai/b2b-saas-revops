@@ -3,7 +3,7 @@ version: 2
 models:
   - name: dim_accounts
     description: >
-      Account ning joriy holati. Grain: bir qator = bir account.
+      Current state of an Account. Grain: one row = one account.
     columns:
       - name: account_id
         data_tests: [not_null, unique]
@@ -12,13 +12,13 @@ models:
       - name: mrr
         data_tests: [not_null]
       - name: arr
-        description: "mrr * 12. Faqat shu bir joyda hisoblanadi."
+        description: "mrr * 12. Calculated here only."
         data_tests: [not_null]
       - name: account_segment
         data_tests:
           - not_null
           - accepted_values:
-              arguments: # <--- FIX: dbt 1.7+ uchun arguments qo'shildi
+              arguments: # <--- FIX: arguments added for dbt 1.7+
                 values: [enterprise, mid_market, smb, unmonetized]
       - name: health_status
         data_tests:
@@ -43,15 +43,14 @@ models:
 
   - name: fct_revenue
     description: >
-      Oylik MRR waterfall. Grain: bir qator = account × oy.
+      Monthly MRR waterfall. Grain: one row = account × month.
     columns:
       - name: account_id
         data_tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('dim_accounts')
-                field: account_id
+              to: ref('dim_accounts')
+              field: account_id
       - name: revenue_month
         data_tests: [not_null]
       - name: mrr
@@ -69,7 +68,7 @@ models:
 
   - name: fct_pipeline
     description: >
-      Lead → won sales funnel. Grain: bir qator = bir lead.
+      Lead → won sales funnel. Grain: one row = one lead.
     columns:
       - name: lead_id
         data_tests: [not_null, unique]
@@ -86,10 +85,10 @@ models:
       - name: lead_score
         data_tests: [not_null]
       - name: days_lead_to_opp
-        description: "Lead yaratilgandan opportunity yaratilgunga qadar kunlar."
+        description: "Days from lead creation to opportunity creation."
       - name: days_opp_to_close
-        description: "Opportunity yaratilgandan yopilgunga qadar kunlar." # Yangi ustun qo'shildi
+        description: "Days from opportunity creation to closing."
       - name: opportunity_id
-        description: "Lead bog'langan opportunity ID-si."
+        description: "Opportunity ID tied to the lead."
       - name: updated_at
         data_tests: [not_null]

@@ -193,4 +193,36 @@ An account was marked `inactive` if it hadn't been logged into for 30 days AND i
 ---
 
 ## Layer 3: Marts
-*To be filled as we review this layer.*
+
+### PM-014 · Attribution Hijacking / Logic Flaw in Pipeline Funnel
+**Severity:** Critical  
+**Layer:** Marts / fct_pipeline  
+**Status:** Fixed
+
+In `fct_pipeline.sql`, Lead campaign attribution was being fetched by mapping the Lead to its Account, and then finding the "Primary Contact" of that Account to use their `first_campaign_name`. If Lead A came from Campaign A, but the Account's primary contact was someone else who came from Campaign X, Lead A's attribution was falsely reported as Campaign X. 
+
+**Fix:** Removed the join to `primary_contacts` for attribution. Instead, joined directly to `stg_campaign_members` (`first_touches`) and `stg_campaigns` using the Lead's own ID. 
+
+**Rule to remember:** Never attribute marketing touches via an Account's primary contact. Attribution should always follow the individual Lead/Contact dimension.
+
+---
+
+### PM-015 · Invalid Relationships Syntax in Marts Schema
+**Severity:** Medium  
+**Layer:** Marts / marts_schema.yml  
+**Status:** Fixed
+
+The `fct_revenue.account_id` column had a relationship test defined with an `arguments:` wrapper inside `relationships:`. This is valid for `accepted_values`, but syntactically invalid for `relationships` tests in dbt, and would cause a catalog validation error.
+
+**Fix:** Removed the `arguments:` wrapper inside the relationships test.
+
+**Rule to remember:** While dbt 1.7+ added the `arguments:` keyword for generic `accepted_values` testing, `relationships` inherently expects `to` and `field` at the root indent.
+
+---
+
+### PM-016 · Translation of Marts models
+**Severity:** Low  
+**Layer:** Marts / all files  
+**Status:** Fixed
+
+Remaining Uzbek comments and descriptions within `dim_accounts.sql`, `fct_revenue.sql`, `fct_pipeline.sql`, and `marts_schema.yml` were translated to English to match project standards.
