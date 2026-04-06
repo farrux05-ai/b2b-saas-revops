@@ -8,7 +8,7 @@ with all_values as (
         funnel_stage as value_field,
         count(*) as n_records
 
-    from "revops_database"."raw_marts"."fct_pipeline"
+    from "revops_analytics"."revops_marts"."fct_pipeline"
     group by funnel_stage
 
 )

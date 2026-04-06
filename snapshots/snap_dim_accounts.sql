@@ -4,8 +4,8 @@
     config(
       target_schema='snapshots',
       unique_key='account_id',
-      strategy='timestamp',
-      updated_at='updated_at',
+      strategy='check',
+      check_cols='all',
     )
   }}
 

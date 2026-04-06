@@ -25,7 +25,7 @@ SELECT
         WHEN ABS(arr - mrr * 12) > 1
             THEN 'arr_mrr_mismatch'
     END AS failure_reason
-FROM "revops_analytics"."marts_marts"."dim_accounts"
+FROM "revops_analytics"."revops_marts"."dim_accounts"
 WHERE mrr < 0
    OR ABS(arr - mrr * 12) > 1
   

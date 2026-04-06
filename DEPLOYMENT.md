@@ -1,6 +1,6 @@
 # Vercel Deployment Guide
 
-Production uchun **dbt docs** va **Evidence.dev** Vercelga deploy qilish qo'llanmasi.
+Guide to deploying **dbt docs** and **Evidence.dev** to Vercel for production.
 
 ## Prerequisites
 

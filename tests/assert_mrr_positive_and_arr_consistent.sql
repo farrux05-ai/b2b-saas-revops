@@ -1,10 +1,10 @@
 -- tests/assert_mrr_positive_and_arr_consistent.sql
 --
--- Maqsad: Ikkita biznes qoidani tekshiradi:
---   1. MRR hech qachon manfiy bo'lmasin (billing xatosi signal)
---   2. ARR = MRR × 12 (hisoblash izchil bo'lsin)
+-- Objective: Validate two business rules:
+--   1. MRR should never be negative (signals a billing anomaly)
+--   2. ARR = MRR × 12 (consistency check)
 --
--- ARR uchun 1 dollar tolerans — float rounding uchun.
+-- Allows 1 dollar tolerance for ARR due to float rounding.
 
 SELECT
     account_id,

@@ -5,7 +5,7 @@
 
 
 select *
-from "revops_database"."raw_marts"."dim_accounts"
+from "revops_analytics"."revops_marts"."dim_accounts"
 where account_id is null
 
 

@@ -8,7 +8,7 @@ with all_values as (
         health_status as value_field,
         count(*) as n_records
 
-    from "revops_database"."raw_marts"."dim_accounts"
+    from "revops_analytics"."revops_marts"."dim_accounts"
     group by health_status
 
 )

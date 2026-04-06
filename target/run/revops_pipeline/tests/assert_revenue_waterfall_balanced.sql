@@ -23,7 +23,7 @@ with monthly as (
         max(expansion_mrr_that_month)                      as expansion_mrr,
         max(contraction_mrr_that_month)                    as contraction_mrr,
         max(churned_mrr_that_month)                        as churned_mrr
-    from "revops_analytics"."marts_marts"."fct_revenue"
+    from "revops_analytics"."revops_marts"."fct_revenue"
     group by revenue_month
 ),
 

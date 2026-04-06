@@ -1,12 +1,12 @@
 -- tests/assert_health_status_logic_consistent.sql
 --
--- Maqsad: health_status mantig'i to'g'ri ishlayaptimi?
---   churned  → subscription_status = cancelled bo'lishi kerak
---   at_risk  → past_due, urgent ticket yoki overdue invoice bo'lishi kerak
---   inactive → last_active_at > 30 kun bo'lishi kerak
---   healthy  → hech qaysi xavf signali bo'lmasligi kerak
+-- Objective: Ensure health_status logic is internally consistent
+--   churned  → subscription_status = cancelled
+--   at_risk  → past_due, urgent ticket, overdue invoice, or high open tickets/response times
+--   inactive → last_active_at > inactive_days_threshold
+--   healthy  → no risk signals present
 --
--- Test muvaffaqiyatli = 0 qator qaytadi
+-- Passes if 0 rows returned
 
 with health as (
     select
@@ -17,7 +17,9 @@ with health as (
         overdue_invoices,
         urgent_open_tickets,
         last_active_at
-        -- ❌ risk_score olib tashlandi — model da yo'q
+        avg_response_hours,
+        open_tickets
+        --  risk_score removed — not in model
     from {{ ref('int_account_health') }}
 ),
 
@@ -44,6 +46,9 @@ violations as (
           overdue_invoices > 0
           or urgent_open_tickets > 0
           or subscription_status = 'past_due'
+          or avg_response_hours > {{ var('at_risk_response_hours') }}
+          or open_tickets > {{ var('at_risk_open_tickets') }}
+          or (last_active_at is not null and last_active_at < now() - interval '{{ var("at_risk_days_since_active") }} days')
       )
 
     union all
@@ -55,7 +60,7 @@ violations as (
         'inactive_but_recent_activity' as violation_type
     from health
     where health_status = 'inactive'
-      and last_active_at >= now() - interval '30 days'
+      and last_active_at >= now() - interval '{{ var("inactive_days_threshold") }} days'
 )
 
 select * from violations

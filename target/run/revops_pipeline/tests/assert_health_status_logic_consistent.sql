@@ -27,7 +27,7 @@ with health as (
         urgent_open_tickets,
         last_active_at
         -- ❌ risk_score olib tashlandi — model da yo'q
-    from "revops_analytics"."marts_int"."int_account_health"
+    from "revops_analytics"."revops_int"."int_account_health"
 ),
 
 violations as (

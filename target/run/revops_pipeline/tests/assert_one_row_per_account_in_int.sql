@@ -15,7 +15,7 @@
 -- Qoida: GROUP BY to'g'ri ishlaganida COUNT(*) hech qachon > 1 bo'lmaydi.
 
 SELECT account_id, COUNT(*) AS cnt
-FROM "revops_analytics"."marts_int"."int_accounts"
+FROM "revops_analytics"."revops_int"."int_accounts"
 GROUP BY account_id
 HAVING COUNT(*) > 1
   

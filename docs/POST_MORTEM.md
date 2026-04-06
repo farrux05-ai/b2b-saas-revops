@@ -245,3 +245,50 @@ Running tests on these columns consumed compute credits on every `dbt test` exec
 **Fix:** Removed 25+ redundant `not_null` tests across Intermediate and Marts YAML files. Replaced them with descriptions noting they cannot be null natively.
 
 **Rule to remember:** Only test the *data*, do not test the SQL database engine. If your query uses `coalesce()` or an exhaustive `CASE..ELSE`, testing for nulls is cargo-cult testing. Save compute.
+
+---
+
+## Layer 4: Custom Tests (`/tests`)
+
+### PM-018 · Custom Test Out of Sync with Model Logic (`assert_health_status_logic_consistent.sql`)
+**Severity:** Medium  
+**Layer:** Tests / assert_health_status_logic_consistent  
+**Status:** Fixed
+
+During the intermediate layer review, we updated `int_account_health` to use dynamic thresholds via `dbt_project.yml` variables rather than hardcoded rules (e.g., `avg_response_hours > {{ var('at_risk_response_hours') }}`). However, the related custom test `assert_health_status_logic_consistent.sql` was still strictly checking for `urgent_open_tickets` and hardcoded `30 days`, ignoring the new risk flags. This mismatch would either cause false positives or fail to catch actual violations.
+
+**Fix:** Updated the custom test's `UNION ALL` statements to match the exact `var()` definitions and extended risk rules used by the model. 
+
+**Rule to remember:** When refactoring business logic or migrating hardcoded thresholds into data variables, always check if any `.sql` or `.yml` tests explicitly assert that logic and update them synchronously.
+
+---
+
+### PM-019 · Cargo-Cult Custom Testing (`assert_no_duplicate_emails_in_staging.sql` & `assert_one_row_per_account_in_int.sql`)
+**Severity:** Low (Compute Waste / Redundancy)  
+**Layer:** Tests  
+**Status:** Fixed
+
+Found two `.sql` tests that were entirely redundant:
+1. `assert_one_row_per_account_in_int.sql` explicitly grouped by `account_id` and had `HAVING COUNT(*) > 1`. This is literally the exact same SQL that the generic `unique` test handles when applied to `int_accounts.account_id` (which was already configured).
+2. `assert_no_duplicate_emails_in_staging.sql` checked for duplicates where `email_row_num = 1`. Mathematically, `ROW_NUMBER() OVER(PARTITION BY email)` guarantees that all rows where `email_row_num = 1` are unique. Testing this is equivalent to testing if `1 = 1`.
+
+**Fix:** Deleted both redundant test files to keep the test suite lean, deterministic, and fast. Translated comments in remaining valid Custom tests (`assert_revenue_waterfall_balanced.sql` and `assert_mrr_positive_and_arr_consistent.sql`) to English.
+
+**Rule to remember:** Never write a custom `.sql` test for logic that a standard generic `unique`, `not_null`, or `accepted_values` test natively handles. Also, do not test mathematical window function axioms.
+
+---
+
+## Layer 5: Snapshots (`/snapshots`)
+
+### PM-020 · False Delta Bloat in SCD Type 2 History
+**Severity:** High (Database Bloat / Data Accuracy)  
+**Layer:** Snapshots / all snapshots  
+**Status:** Fixed
+
+Both `snap_dim_accounts.sql` and `snap_fct_pipeline.sql` were configured with `strategy='timestamp'` pointing to `updated_at`. However, in the underlying Marts models, `updated_at` was hardcoded as `current_timestamp`. 
+
+**Impact:** Because the timestamp updated every second/minute, dbt snapshot erroneously detected a "change" for every single row in the database every time it ran. This would have caused the snapshot tables to grow exponentially and rendered historical comparison useless (since every record would have a lifespan of only 1-2 hours).
+
+**Fix:** Switched from `strategy='timestamp'` to `strategy='check'` with `check_cols='all'`. This ensures a new historical record is only created if the actual data values change, regardless of the metadata timestamp.
+
+**Rule to remember:** Never use a `timestamp` strategy on a column that is generated via `current_timestamp` or any non-deterministic function in SQL. If you don't have a reliable source-system update timestamp, use `strategy='check'`. Use `check_cols='all'` for wide dimension tables to capture any attribute change.

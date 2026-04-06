@@ -1,10 +1,10 @@
 -- tests/assert_revenue_waterfall_balanced.sql
 --
--- Maqsad: MRR waterfall balansi to'g'rimi?
---   Har oy uchun: oldingi_mrr + new + expansion - contraction - churned
---   = joriy_mrr bo'lishi kerak (kichik farq ruxsat)
+-- Objective: Ensure the MRR waterfall is balanced
+--   For each month: prev_mrr + new + expansion - contraction - churned
+--   = current_mrr (with a permitted tolerance)
 --
--- Test muvaffaqiyatli = 0 qator qaytadi (katta farq yo'q)
+-- Passes if 0 rows returned (no wild imbalances)
 
 with monthly as (
     select
@@ -30,7 +30,7 @@ monthly_with_prev as (
     from monthly
 ),
 
--- Balans tekshiruv: farq 1$ dan ko'p bo'lmasligi kerak (rounding)
+-- Balance check: difference should not exceed tolerance
 imbalanced as (
     select
         revenue_month,
@@ -51,7 +51,7 @@ imbalanced as (
             )
         )                                                   as mrr_diff
     from monthly_with_prev
-    where prev_mrr is not null  -- birinchi oy skip
+    where prev_mrr is not null  -- skip first month
 )
 
 select *

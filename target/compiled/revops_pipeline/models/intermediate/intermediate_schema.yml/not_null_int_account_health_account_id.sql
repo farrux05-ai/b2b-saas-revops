@@ -5,7 +5,7 @@
 
 
 select *
-from "revops_database"."raw_int"."int_account_health"
+from "revops_analytics"."revops_int"."int_account_health"
 where account_id is null
 
 

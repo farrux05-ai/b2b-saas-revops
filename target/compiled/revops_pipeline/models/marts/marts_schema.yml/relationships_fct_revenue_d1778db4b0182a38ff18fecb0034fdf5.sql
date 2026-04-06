@@ -4,13 +4,13 @@
 
 with child as (
     select account_id as from_field
-    from "revops_database"."raw_marts"."fct_revenue"
+    from "revops_analytics"."revops_marts"."fct_revenue"
     where account_id is not null
 ),
 
 parent as (
     select account_id as to_field
-    from "revops_database"."raw_marts"."dim_accounts"
+    from "revops_analytics"."revops_marts"."dim_accounts"
 )
 
 select
