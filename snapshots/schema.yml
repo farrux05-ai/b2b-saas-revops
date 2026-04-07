@@ -1,0 +1,64 @@
+version: 2
+
+snapshots:
+  # Raw source snapshots - track changes at source level
+  
+  - name: snap_accounts
+    relation: source('revops_raw', 'accounts')
+    description: >
+      Tracks account attribute changes from raw source.
+      Monitors: industry, country, subscription status changes.
+      Strategy: check_cols to detect any attribute changes.
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: account_id
+      check_cols: ['industry', 'country', 'subscription_status']
+
+  - name: snap_contacts
+    relation: source('revops_raw', 'contacts')
+    description: >
+      Tracks contact attribute changes from raw source.
+      Monitors: job title, primary contact flag, account association.
+      Strategy: check_cols to detect changes in contact attributes.
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: contact_id
+      check_cols: ['job_title', 'is_primary', 'account_id']
+
+  - name: snap_opportunities
+    relation: source('revops_raw', 'opportunities')
+    description: >
+      Tracks opportunity/deal stage and amount changes from raw source.
+      Monitors: stage progression, amount updates, close date changes.
+      Strategy: check_cols to detect pipeline movement and amount changes.
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: opportunity_id
+      check_cols: ['stage', 'amount', 'close_date']
+
+  - name: snap_activities
+    relation: source('revops_raw', 'activities')
+    description: >
+      Tracks activity/engagement events from raw source.
+      Monitors: engagement type and timestamp of customer activities.
+      Strategy: timestamp to capture all new engagement records.
+    config:
+      target_schema: snapshots
+      strategy: timestamp
+      unique_key: activity_id
+      updated_at: created_at
+
+  - name: snap_subscriptions
+    relation: source('revops_raw', 'subscriptions')
+    description: >
+      Tracks subscription status and billing changes from raw source.
+      Monitors: plan changes, status transitions, MRR/ARR updates, cancellation.
+      Strategy: check_cols to detect billing and status changes.
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: subscription_id
+      check_cols: ['plan', 'status', 'mrr']

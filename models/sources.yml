@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: revops_raw
   
-    database: "revops_database"
+    database: "{{ 'revops_database' if target.type != 'duckdb' else none }}"
     schema: raw
     description: >
       Raw data source from Postgres.
