@@ -9,7 +9,7 @@
     as (
       with subscriptions as (
     select * from "revops_analytics"."revops_staging"."stg_subscriptions"
-    where not is_status_conflict
+    where not coalesce(is_status_conflict, false)
 ),
 
 accounts as (

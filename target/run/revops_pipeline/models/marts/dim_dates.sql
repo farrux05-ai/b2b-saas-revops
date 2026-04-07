@@ -1,4 +1,13 @@
--- dim_dates: Universal date dimension table for time-series analysis
+
+  
+    
+    
+
+    create  table
+      "revops_analytics"."revops_marts"."dim_dates__dbt_tmp"
+  
+    as (
+      -- dim_dates: Universal date dimension table for time-series analysis
 -- Grain: one row = one calendar date
 
 with date_spine as (
@@ -64,3 +73,6 @@ select
 
 from date_spine
 order by date_day
+    );
+  
+  
