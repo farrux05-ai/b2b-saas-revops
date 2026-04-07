@@ -2,6 +2,7 @@ version: 2
 
 sources:
   - name: revops_raw
+  
     database: "revops_database"
     schema: raw
     description: >

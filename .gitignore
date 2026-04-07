@@ -2,9 +2,8 @@
 dbt_packages/
 logs/
 *.log
-
-# dbt local profiles (contains secrets)
-.dbt/profiles.yml
+target/
+.dbt/
 
 # ── Python virtual environments ───────────────────────
 .venv/

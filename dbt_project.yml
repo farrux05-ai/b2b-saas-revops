@@ -31,7 +31,7 @@ tests:
     # Staging: warn — don't stop if data is flowing
     staging:
       +severity: warn
-      +store_failures: true       # failures written in DB — for monitoring
+      +store_failures: true       # failures written in DB — for monitoring and debugging
       +schema: test_failures
 
     # Intermediate: error — stop if JOIN logic fails
