@@ -789,4 +789,4 @@ Binder Error: Catalog "revops_database" does not exist!
 
 ---
 
-**Questions?** Open an issue or reach out on [LinkedIn](https://linkedin.com/in/your-profile)
+**Questions?** Open an issue or reach out on [LinkedIn](https://linkedin.com/in/farruxbek-valijonov)

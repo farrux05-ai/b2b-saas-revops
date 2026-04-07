@@ -88,3 +88,46 @@ models:
         description: "Opportunity ID tied to the lead."
       - name: updated_at
         description: "current_timestamp - cannot be null"
+
+  - name: dim_dates
+    description: >
+      Universal date dimension table for time-series analysis.
+      Grain: one row = one calendar date from 2020-01-01 onwards.
+    columns:
+      - name: date_day
+        description: "The actual date (primary key)"
+        data_tests: [not_null, unique]
+      - name: date_id
+        description: "Same as date_day for backward compatibility"
+      - name: year
+        description: "Calendar year"
+      - name: quarter
+        description: "Quarter (1-4)"
+      - name: month
+        description: "Month (1-12)"
+      - name: year_month
+        description: "YYYY-MM format"
+      - name: week_of_year
+        description: "Week number (1-53)"
+      - name: year_week
+        description: "YYYY-WNN format"
+      - name: day_of_month
+        description: "Day of month (1-31)"
+      - name: day_of_week_num
+        description: "Day of week number (0=Sunday to 6=Saturday)"
+      - name: day_of_week_name
+        description: "Day of week name (Sunday-Saturday)"
+      - name: day_of_year
+        description: "Day of year (1-366)"
+      - name: is_weekend
+        description: "True if Saturday or Sunday"
+      - name: is_holiday
+        description: "True if US federal holiday"
+      - name: fiscal_year
+        description: "Fiscal year (currently same as calendar year)"
+      - name: fiscal_quarter
+        description: "Fiscal quarter"
+      - name: fiscal_month
+        description: "Fiscal month"
+      - name: updated_at
+        description: "current_timestamp - cannot be null"
