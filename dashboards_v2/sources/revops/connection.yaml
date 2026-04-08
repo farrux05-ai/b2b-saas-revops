@@ -1,4 +1,4 @@
 name: revops
 type: duckdb
 options:
-  filename: ../../duckdb/revops_analytics.duckdb
+  filename: ./revops_analytics.duckdb
