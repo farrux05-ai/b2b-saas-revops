@@ -9,32 +9,49 @@ models:
         data_tests: [not_null, unique]
       - name: account_name
         data_tests: [not_null]
+      - name: industry
+      - name: country
       - name: mrr
         description: "coalesce(ah.mrr, 0) - cannot be null"
       - name: arr
         description: "mrr * 12. Calculated here only."
-      - name: account_segment
-        data_tests:
-          - accepted_values:
-              arguments: # <--- FIX: arguments added for dbt 1.7+
-                values: [enterprise, mid_market, smb, unmonetized]
-      - name: health_status
-        data_tests:
-          - accepted_values:
-              arguments:
-                values: [healthy, at_risk, inactive, churned]
+      - name: product_plan
       - name: subscription_status
         data_tests:
           - accepted_values:
               arguments:
                 values: [active, past_due, trialing, cancelled]
               severity: warn
+      - name: is_past_due
+      - name: subscription_started_at
+      - name: subscription_cancelled_at
+      - name: account_segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [enterprise, mid_market, smb, unmonetized]
+      - name: total_users
+      - name: active_users
+      - name: events_last_30d
+      - name: last_active_at
+      - name: health_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [healthy, at_risk, inactive, churned]
+      - name: urgent_open_tickets
+      - name: open_tickets
+      - name: avg_response_hours
+      - name: overdue_invoices
       - name: total_contacts
         description: "Derived via coalesce() - cannot be null"
+      - name: primary_contact_name
+      - name: primary_lead_source
       - name: open_opportunities
         description: "Derived via coalesce() - cannot be null"
       - name: total_won_amount
         description: "Derived via coalesce() - cannot be null"
+      - name: last_won_date
       - name: updated_at
         description: "current_timestamp - cannot be null"
 

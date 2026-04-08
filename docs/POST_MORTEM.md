@@ -292,3 +292,30 @@ Both `snap_dim_accounts.sql` and `snap_fct_pipeline.sql` were configured with `s
 **Fix:** Switched from `strategy='timestamp'` to `strategy='check'` with `check_cols='all'`. This ensures a new historical record is only created if the actual data values change, regardless of the metadata timestamp.
 
 **Rule to remember:** Never use a `timestamp` strategy on a column that is generated via `current_timestamp` or any non-deterministic function in SQL. If you don't have a reliable source-system update timestamp, use `strategy='check'`. Use `check_cols='all'` for wide dimension tables to capture any attribute change.
+
+---
+
+## Layer 6: Governance & Contracts
+
+### PM-021 · Over-engineering with dbt Model Contracts
+**Severity:** Low (Process/Efficiency)  
+**Layer:** Marts / Governance  
+**Status:** Resolved (Reverted)
+
+We initially implemented dbt Model Contracts (`contract: {enforced: true}`) for the `dim_accounts` model. This was intended to provide schema enforcement and prevent breaking changes for downstream consumers. 
+
+**The "Over-engineering" Trap:** For this specific project context (high iteration speed, single developer, local DuckDB environment), Model Contracts proved to be over-engineering. Every minor change in the SQL (e.g., adding a column or changing a cast) required a corresponding manual update to the YAML file to specify the `data_type`. This added significant administrative overhead without providing proportional value, as the project lacks external consumers who require such strict schema guarantees.
+
+**When to use Contracts:** 
+- High-stakes production environments with multiple downstream teams (e.g., separate BI, Machine Learning, or Product teams).
+- Large-scale projects where schema drift must be caught *before* the model is materialized in the database.
+- When using adapters that support database-level constraints (Postgres, Snowflake) and where performance-critical constraints are needed.
+
+**When they are Over-engineering:**
+- Local development/prototyping where schemas are still evolving daily.
+- Small-scale pipelines where standard dbt tests (`unique`, `not_null`, `accepted_values`) provide sufficient data quality coverage.
+- When the cost of manually maintaininig YAML `data_type` mappings outweighs the risk of a schema change.
+
+**Fix:** Reverted the `dim_accounts` contract and specifying `data_type` in `marts_schema.yml`. Standard Data Tests (`not_null`, `unique`, `accepted_values`) are maintained as they provide sufficient validation for current business needs.
+
+**Rule to remember:** "Simplicity is the ultimate sophistication." Do not implement complex governance features like Data Contracts until the project reaches a level of maturity or consumer scale that genuinely requires them. Testing business logic with `.sql` tests is often more important than enforcing strict schema types in the early stages.
