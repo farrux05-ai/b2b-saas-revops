@@ -62,6 +62,7 @@ SELECT ...;
 ```
 
 dbt approach:
+{% raw %}
 ```sql
 -- models/staging/stg_support/stg_zendesk_tickets.sql
 {{ config(materialized='view') }}
@@ -72,6 +73,7 @@ SELECT
   created_at
 FROM {{ source('raw', 'zendesk_tickets') }}
 ```
+{% endraw %}
 
 dbt automatically:
 - Runs this AFTER `stg_accounts` (dependency graph)
@@ -103,6 +105,7 @@ dbt automatically:
 ```markdown
 # Revenue Dashboard
 
+{% raw %}
 ```sql monthly_mrr
 select date_trunc('month', subscription_start) as month,
        sum(mrr) as total_mrr
@@ -111,6 +114,7 @@ group by 1
 order by 1 desc
 limit 12
 ```
+{% endraw %}
 
 <LineChart 
   data={monthly_mrr} 
@@ -214,6 +218,7 @@ staging/ → intermediate/ → marts/
 
 Purpose: Clean, standardize, rename
 
+{% raw %}
 ```sql
 -- models/staging/stg_finance/stg_subscriptions.sql
 {{ config(materialized='view') }}
@@ -231,6 +236,7 @@ SELECT
 FROM {{ source('raw', 'stripe_subscriptions') }}
 WHERE deleted_at IS NULL                            -- Soft delete filter
 ```
+{% endraw %}
 
 **Why views, not tables?**
 - No storage duplication
@@ -245,6 +251,7 @@ WHERE deleted_at IS NULL                            -- Soft delete filter
 
 Purpose: Join sources, apply business logic
 
+{% raw %}
 ```sql
 -- models/intermediate/int_accounts.sql
 {{ config(materialized='view') }}
@@ -284,6 +291,7 @@ LEFT JOIN subscriptions s USING (account_id)
 LEFT JOIN tickets_agg t USING (account_id)
 LEFT JOIN usage_agg u USING (account_id)
 ```
+{% endraw %}
 
 **Why keep this as a view?**
 - Marts reference `{{ ref('int_accounts') }}` - if int is a table, marts rebuild is slow
@@ -297,10 +305,12 @@ Purpose: Pre-compute expensive metrics for BI tools
 
 ```sql
 -- models/marts/dim_accounts.sql
+{% raw %}
 {{ config(
   materialized='table',
   indexes=[{'columns': ['account_id'], 'unique': True}]
 ) }}
+{% endraw %}
 
 SELECT 
   *,
@@ -315,7 +325,7 @@ SELECT
     ) >= 2 THEN 'at_risk'
     ELSE 'healthy'
   END AS health_status
-FROM {{ ref('int_accounts') }}
+FROM {% raw %}{{ ref('int_accounts') }}{% endraw %}
 ```
 
 **Why materialize as table?**
@@ -345,11 +355,13 @@ SELECT
   event_timestamp
 FROM {{ ref('stg_product_events') }}
 
+{% raw %}
 {% if is_incremental() %}
   -- Only process new events
   WHERE event_timestamp > (SELECT MAX(event_timestamp) FROM {{ this }})
 {% endif %}
 ```
+{% endraw %}
 
 **How it works:**
 - First run: Full table build
@@ -489,6 +501,7 @@ models:
 -- tests/assert_revenue_waterfall_balanced.sql
 -- Revenue changes must sum to net MRR change
 
+{% raw %}
 WITH revenue_changes AS (
   SELECT 
     SUM(new_mrr + expansion_mrr - churn_mrr - contraction_mrr) AS net_change
@@ -498,6 +511,7 @@ WITH revenue_changes AS (
 SELECT * FROM revenue_changes
 WHERE ABS(net_change) > {{ var('revenue_waterfall_tolerance', 5) }}
 ```
+{% endraw %}
 
 **Why this structure?**
 - Schema tests catch 90% of data issues (nulls, duplicates)

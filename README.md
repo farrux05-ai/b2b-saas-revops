@@ -137,6 +137,7 @@ stg_accounts (HubSpot)        ← anchor
 
 ### Account Health Logic
 
+{% raw %}
 ```sql
 CASE
   WHEN subscription_status = 'cancelled'   THEN 'churned'
@@ -150,6 +151,7 @@ CASE
   ELSE                                                          'healthy'
 END
 ```
+{% endraw %}
 
 ---
 

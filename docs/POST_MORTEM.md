@@ -13,7 +13,7 @@ This is a living document. Every time we discover a bug, misconfiguration, or de
 
 Database credentials (host, user, password, dbname, port) were written directly inside `profiles.yml` as plain text. This file was committed to Git, meaning anyone with repository access could read the production database password.
 
-**Fix:** All credentials moved to `~/.zshrc` as environment variables. `profiles.yml` now reads them via `{{ env_var('DBT_POSTGRES_*') }}`.
+**Fix:** All credentials moved to `~/.zshrc` as environment variables. `profiles.yml` now reads them via {% raw %}`{{ env_var('DBT_POSTGRES_*') }}`{% endraw %}.
 
 **Rule to remember:** Secrets never go in code. If a value would be embarrassing to see on GitHub, it belongs in an environment variable.
 
@@ -255,7 +255,7 @@ Running tests on these columns consumed compute credits on every `dbt test` exec
 **Layer:** Tests / assert_health_status_logic_consistent  
 **Status:** Fixed
 
-During the intermediate layer review, we updated `int_account_health` to use dynamic thresholds via `dbt_project.yml` variables rather than hardcoded rules (e.g., `avg_response_hours > {{ var('at_risk_response_hours') }}`). However, the related custom test `assert_health_status_logic_consistent.sql` was still strictly checking for `urgent_open_tickets` and hardcoded `30 days`, ignoring the new risk flags. This mismatch would either cause false positives or fail to catch actual violations.
+During the intermediate layer review, we updated `int_account_health` to use dynamic thresholds via `dbt_project.yml` variables rather than hardcoded rules (e.g., `avg_response_hours > {% raw %}{{ var('at_risk_response_hours') }}{% endraw %}`). However, the related custom test `assert_health_status_logic_consistent.sql` was still strictly checking for `urgent_open_tickets` and hardcoded `30 days`, ignoring the new risk flags. This mismatch would either cause false positives or fail to catch actual violations.
 
 **Fix:** Updated the custom test's `UNION ALL` statements to match the exact `var()` definitions and extended risk rules used by the model. 
 
