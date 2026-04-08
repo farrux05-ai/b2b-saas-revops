@@ -49,6 +49,5 @@ yarn.lock
 # ── OS ────────────────────────────────────────────────
 Thumbs.db
 .AppleDouble
-
-# ── Aider ─────────────────────────────────────────────
-.aider*
+package-lock.yml
+packages.yml

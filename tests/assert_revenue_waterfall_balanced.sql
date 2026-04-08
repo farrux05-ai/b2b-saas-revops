@@ -1,4 +1,8 @@
 -- tests/assert_revenue_waterfall_balanced.sql
+{{ config(
+    severity = 'error',
+    store_failures = true
+) }}
 --
 -- Objective: Ensure the MRR waterfall is balanced
 --   For each month: prev_mrr + new + expansion - contraction - churned

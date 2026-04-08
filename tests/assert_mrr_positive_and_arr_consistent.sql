@@ -1,4 +1,8 @@
 -- tests/assert_mrr_positive_and_arr_consistent.sql
+{{ config(
+    severity = 'error',
+    store_failures = true
+) }}
 --
 -- Objective: Validate two business rules:
 --   1. MRR should never be negative (signals a billing anomaly)
