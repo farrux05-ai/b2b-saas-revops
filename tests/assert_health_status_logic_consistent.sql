@@ -21,7 +21,7 @@ with
             subscription_status,
             overdue_invoices,
             urgent_open_tickets,
-            last_active_at
+            last_active_at,
             avg_response_hours,
             open_tickets
         from {{ ref('int_account_health') }}
@@ -50,12 +50,13 @@ with
                 overdue_invoices > 0
                 or urgent_open_tickets > 0
                 or subscription_status = 'past_due'
-                or avg_response_hours > {{ var('at_risk_response_hours') }}
-                or open_tickets > {{ var('at_risk_open_tickets') }}
+                or avg_response_hours > {{ var("at_risk_response_hours") }}::numeric
+                or open_tickets > {{ var("at_risk_open_tickets") }}::numeric
                 or (
                     last_active_at is not null
                     and last_active_at
-                    < now() - interval '{{ var("at_risk_days_since_active") }} days'
+                    < now()
+                    - ({{ var("at_risk_days_since_active") }} * interval '1 day')
                 )
             )
 
@@ -70,7 +71,7 @@ with
         where
             health_status = 'inactive'
             and last_active_at
-            >= now() - interval '{{ var("inactive_days_threshold") }} days'
+            >= now() - ({{ var("inactive_days_threshold") }} * interval '1 day')
     )
 
 select *
