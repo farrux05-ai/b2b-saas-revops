@@ -272,19 +272,46 @@ dbt docs generate && dbt docs serve
 
 ## Dashboard Visualization
 
-### Evidence Analytics Dashboard (Recommended)
+### Streamlit Revenue Operations Dashboard (Recommended) ⭐
 
-Modern, interactive Revenue Operations dashboard powered by Evidence.
+Professional B2B-focused Revenue Intelligence dashboard built with Streamlit.
 
-Features:
-- Real-time KPI metrics (MRR, ARR, account count)
-- MRR trend analysis with new/expansion/contraction/churn breakdown
-- Account segmentation by revenue and health
-- Sales pipeline funnel (Lead to MQL to SQL to Won)
-- Geographic lead distribution
-- Marketing campaign performance and ROI by channel
+**Features:**
+- 📊 **Revenue Summary** - Total accounts, segmentation (Enterprise/Mid-Market/SMB), opportunities & tickets
+- ❤️ **Account Health & Risk** - Healthy/At-Risk/Churning classification with automatic scoring
+- 📈 **Segmentation & Portfolio Health** - Segment performance analysis and portfolio trends
+- 💼 **Engagement & Activity** - Account engagement metrics and contact coverage analysis
+- 🎯 **Top Opportunities** - High-priority expansion opportunities and upsell targets
+- 🚨 **Churn Risk Assessment** - Critical/High/Medium/Low risk matrix with action items
+- 📋 **Complete Account Portfolio** - Full portfolio health dashboard with segment breakdown
 
-Access:
+**Access:**
+```bash
+source dbt-venv/bin/activate
+streamlit run dashboard.py
+# Open http://localhost:8501
+```
+
+**Why Streamlit?**
+- ✅ Pure Python — no build complexity
+- ✅ Real-time data from DuckDB
+- ✅ Zero infrastructure overhead
+- ✅ Professional, minimal design
+- ✅ Easy to extend and customize
+
+**Key Insights:**
+- Account health signals derived from opportunities + support tickets
+- Churn risk detection for proactive retention
+- Segment performance comparison
+- Contact coverage analysis
+- At-risk account alerts with action priorities
+
+---
+
+### Alternative: Evidence Analytics Dashboard
+
+If you prefer web-based, interactive BI dashboards:
+
 ```bash
 cd dashboards_v2
 npm install
@@ -292,18 +319,7 @@ npm run dev
 # Open http://localhost:3000
 ```
 
-**Dashboard Queries (from `dashboards_v2/pages/index.md`):**
-
-| Section | Metric | Query |
-|---------|--------|-------|
-| Overview | Total MRR | `SUM(mrr)` from `dim_accounts` |
-| | Total ARR | `SUM(arr)` from `dim_accounts` |
-| | Active Accounts | `COUNT(*)` where `subscription_status = 'active'` |
-| MRR Trend | Monthly progression | Group by `revenue_month` from `fct_revenue` |
-| | Revenue types | Breakdown: New, Expansion, Contraction, Churned |
-| Account Health | Status distribution | Count by `health_status` from `dim_accounts` |
-| Account Segment | Revenue segment performance | Distribution by `account_segment` (SMB, Mid-Market, Enterprise) |
-| Sales Pipeline | Deal progression | Count of opportunities by `funnel_stage` |
+*Note: Evidence requires Node.js and additional build dependencies. Use Streamlit for simpler setup.*
 
 ---
 
