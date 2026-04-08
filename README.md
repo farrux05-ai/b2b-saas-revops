@@ -268,60 +268,101 @@ dbt docs generate && dbt docs serve
 # Open http://localhost:8080
 ```
 
----
+### 4. Launch Streamlit Dashboard
 
-## Dashboard Visualization
-
-### Streamlit Revenue Operations Dashboard (Recommended) ⭐
-
-Professional B2B-focused Revenue Intelligence dashboard built with Streamlit.
-
-**Features:**
-- 📊 **Revenue Summary** - Total accounts, segmentation (Enterprise/Mid-Market/SMB), opportunities & tickets
-- ❤️ **Account Health & Risk** - Healthy/At-Risk/Churning classification with automatic scoring
-- 📈 **Segmentation & Portfolio Health** - Segment performance analysis and portfolio trends
-- 💼 **Engagement & Activity** - Account engagement metrics and contact coverage analysis
-- 🎯 **Top Opportunities** - High-priority expansion opportunities and upsell targets
-- 🚨 **Churn Risk Assessment** - Critical/High/Medium/Low risk matrix with action items
-- 📋 **Complete Account Portfolio** - Full portfolio health dashboard with segment breakdown
-
-**Access:**
 ```bash
-source dbt-venv/bin/activate
 streamlit run dashboard.py
 # Open http://localhost:8501
 ```
 
-**Why Streamlit?**
-- ✅ Pure Python — no build complexity
-- ✅ Real-time data from DuckDB
-- ✅ Zero infrastructure overhead
-- ✅ Professional, minimal design
-- ✅ Easy to extend and customize
-
-**Key Insights:**
-- Account health signals derived from opportunities + support tickets
-- Churn risk detection for proactive retention
-- Segment performance comparison
-- Contact coverage analysis
-- At-risk account alerts with action priorities
-
 ---
 
-### Alternative: Evidence Analytics Dashboard
+## 📊 Dashboards & Monitoring
 
-If you prefer web-based, interactive BI dashboards:
+### 1. dbt Documentation Portal
+Explore data lineage, model dependencies, and complete data dictionary:
 
 ```bash
-cd dashboards_v2
-npm install
-npm run dev
-# Open http://localhost:3000
+dbt docs serve
+# Navigate to http://localhost:8080
 ```
 
-*Note: Evidence requires Node.js and additional build dependencies. Use Streamlit for simpler setup.*
+**Available at:** http://localhost:8080
+
+**Features:**
+- 📈 Visual data lineage graph showing model dependencies
+- 📚 Complete data dictionary with column descriptions and types
+- 🔍 Model, source, and test documentation
+- 🏷️ Tag-based navigation (staging, marts, core, etc.)
+- 🧪 Test coverage and results
 
 ---
+
+### 2. Streamlit Revenue Operations Dashboard ⭐ (Recommended)
+
+Interactive B2B revenue intelligence dashboard with real-time data from DuckDB.
+
+```bash
+streamlit run dashboard.py
+```
+
+**Access:** http://localhost:8501
+
+#### Dashboard Sections
+
+| Section | Metrics | Business Use |
+|---------|---------|--------|
+| **Revenue Summary** | Total accounts, segments, opportunities, tickets | Executive KPI overview |
+| **Account Health & Risk** | Healthy/At-Risk/Churning distribution | Identify at-risk customers |
+| **Segmentation & Portfolio** | Enterprise/Mid-Market/SMB breakdown | Segment strategy & strategy |
+| **Engagement & Activity** | Engagement metrics, contact coverage | Customer success monitoring |
+| **Top Opportunities** | High-value expansion targets | Sales force focus areas |
+| **Churn Risk Assessment** | Critical/High/Medium/Low risk matrix | Proactive retention planning |
+| **Account Portfolio** | Complete portfolio health | Full portfolio overview |
+
+#### Key Capabilities
+
+- ✅ Real-time data querying from DuckDB
+- ✅ Automatic account health scoring
+- ✅ Churn risk detection (opportunities + support signals)
+- ✅ Segment performance analysis
+- ✅ Contact coverage analysis
+- ✅ Action-oriented at-risk alerts
+
+---
+
+## 🚀 Quick Reference
+
+### Running Everything
+
+```bash
+# 1. Activate environment
+source dbt-venv/bin/activate
+
+# 2. Run dbt pipeline (one command)
+dbt run && dbt test
+
+# 3. Generate documentation
+dbt docs serve    # http://localhost:8080
+
+# 4. In another terminal: Launch dashboard
+streamlit run dashboard.py    # http://localhost:8501
+```
+
+### Common Commands
+
+```bash
+dbt run              # Build all models
+dbt test             # Run quality tests
+dbt snapshot         # Create SCD snapshots
+dbt freshness        # Check source freshness
+dbt docs generate    # Generate documentation
+dbt debug            # Test environment setup
+```
+
+---
+
+
 
 ## Data Quality
 
