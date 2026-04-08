@@ -7,7 +7,7 @@
 
 A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with **dbt**, **DuckDB**, and **Evidence**.
 
-Status: Production Ready | Data freshness: Daily | Test Coverage: 158 tests | 22 models | 2 snapshots
+Status: Production Ready | Data freshness: Daily | Test Coverage: 102 tests | 25 models | 7 snapshots
 
 ---
 
@@ -110,7 +110,9 @@ Staging and intermediate as views means zero storage overhead and always-fresh d
 
 ---
 
-## Data Model
+### Entity Relationship Diagram (ERD)
+
+![RevOps Pipeline ERD](./screenshots/erd_diagram.png)
 
 All sources join to `stg_accounts` via `account_id`. 1:1 relationships use direct LEFT JOINs; 1:N relationships are aggregated in a CTE before joining to prevent row multiplication.
 
@@ -138,11 +140,14 @@ stg_accounts (HubSpot)        ← anchor
 ```sql
 CASE
   WHEN subscription_status = 'cancelled'   THEN 'churned'
-  WHEN subscription_status = 'past_due'    THEN 'at_risk'
+  WHEN is_past_due                         THEN 'at_risk'
   WHEN urgent_open_tickets > 0             THEN 'at_risk'
   WHEN overdue_invoices > 0                THEN 'at_risk'
-  WHEN last_active_at < NOW() - INTERVAL '30 days' THEN 'inactive'
-  ELSE                                          'healthy'
+  WHEN avg_response_hours > {{ var('at_risk_response_hours') }} THEN 'at_risk'
+  WHEN open_tickets > {{ var('at_risk_open_tickets') }}       THEN 'at_risk'
+  WHEN last_active_at < NOW() - ({{ var('inactive_days_threshold') }} * INTERVAL '1 day') 
+       AND subscription_status IN ('active', 'trialing')       THEN 'inactive'
+  ELSE                                                          'healthy'
 END
 ```
 
@@ -175,15 +180,14 @@ b2b-saas-revops/
 │       └── fct_marketing_campaigns.sql
 │
 ├── tests/
-│   ├── assert_one_row_per_account_in_int.sql
 │   ├── assert_revenue_waterfall_balanced.sql
 │   ├── assert_health_status_logic_consistent.sql
-│   ├── assert_mrr_positive_and_arr_consistent.sql
-│   └── assert_no_duplicate_emails_in_staging.sql
+│   └── assert_mrr_positive_and_arr_consistent.sql
 │
 ├── snapshots/
-│   ├── snap_dim_accounts.sql    # SCD Type 2: account health history
-│   └── snap_fct_pipeline.sql    # SCD Type 2: opportunity stage history
+│   ├── schema.yml               # Unified snapshot definitions (v1.9+)
+│   ├── snap_dim_accounts.sql    # Analytical snapshots: account health history
+│   └── snap_fct_pipeline.sql    # Analytical snapshots: opportunity stage history
 │
 ├── macros/
 │   └── postgres_source.sql      # DuckDB postgres_scan wrapper (reads DSN from env)
@@ -253,7 +257,7 @@ dbt debug
 # Build all models
 dbt run
 
-# Run all data quality tests (158 tests)
+# Run all data quality tests (102 tests)
 dbt test
 
 # Build SCD Type 2 snapshots
@@ -315,12 +319,11 @@ All tests run via `dbt test`. Tests are layered by severity:
 
 Custom singular tests include:
 
-- `assert_one_row_per_account_in_int` — prevents fan-out from bad joins
 - `assert_revenue_waterfall_balanced` — MRR changes must reconcile month-over-month
 - `assert_health_status_logic_consistent` — churned accounts must have cancelled subscriptions
 - `assert_mrr_positive_and_arr_consistent` — ARR must equal MRR × 12
 
-Test failures are stored to `raw_test_failures.*` schema for debugging.
+Test failures are stored to `test_failures` schema for debugging.
 
 ---
 
@@ -451,8 +454,8 @@ Production-ready revenue operations data pipeline with integrated analytics:
 
 - **Unified Data Model:** One `account_id` across all sources (HubSpot, Stripe, Mixpanel, Intercom)
 - **Interactive Dashboards:** Evidence.dev dashboards for revenue, health, and pipeline analytics
-- **Comprehensive Testing:** 158 automated data quality tests across all layers
-- **Change Tracking:** SCD Type 2 snapshots for churn analysis and account history
+- **Comprehensive Testing:** 102 automated data quality tests across all layers
+- **Change Tracking:** 7 SCD Type 2 snapshots for churn analysis and account history
 - **Production Ready:** Daily refresh schedule with error monitoring and test failures logged
 - **Extensible:** Add new sources in 3 steps (sources.yml → stg_* → int_*)
 
