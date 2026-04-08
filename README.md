@@ -421,6 +421,7 @@ dbt run && dbt snapshot
 
 - [Case Study](./docs/CASE_STUDY.md) — Business impact and implementation story
 - [Technical Deep-Dive](./docs/TECHNICAL.md) — Architecture decisions and advanced topics
+- [Deployment Guide](./docs/DEPLOYMENT.md) — How to host Evidence and dbt docs
 
 ---
 
