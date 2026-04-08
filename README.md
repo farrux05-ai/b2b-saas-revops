@@ -7,7 +7,7 @@
 
 A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with **dbt**, **DuckDB**, and **Evidence**.
 
-Status: Production Ready | Data freshness: Daily | Test Coverage: 102 tests | 25 models | 7 snapshots
+Status: Production Ready | Data freshness: Daily | Test Coverage: 100 tests | 23 models | 5 snapshots
 
 ---
 
@@ -185,9 +185,7 @@ b2b-saas-revops/
 │   └── assert_mrr_positive_and_arr_consistent.sql
 │
 ├── snapshots/
-│   ├── schema.yml               # Unified snapshot definitions (v1.9+)
-│   ├── snap_dim_accounts.sql    # Analytical snapshots: account health history
-│   └── snap_fct_pipeline.sql    # Analytical snapshots: opportunity stage history
+│   └── schema.yml               # Unified snapshot definitions (v1.9+)
 │
 ├── macros/
 │   └── postgres_source.sql      # DuckDB postgres_scan wrapper (reads DSN from env)
@@ -257,7 +255,7 @@ dbt debug
 # Build all models
 dbt run
 
-# Run all data quality tests (102 tests)
+# Run all data quality tests (100 tests)
 dbt test
 
 # Build SCD Type 2 snapshots
@@ -329,22 +327,22 @@ Test failures are stored to `test_failures` schema for debugging.
 
 ## Change History (SCD Type 2)
 
-Snapshots track when accounts and opportunities change state over time.
+Snapshots are defined using **dbt v1.9+ YAML-based syntax**, providing a unified and maintainable structure for historical change tracking across 5 key entities: `accounts`, `contacts`, `opportunities`, `leads`, and `subscriptions`.
 
 ```sql
--- When did an account transition to at_risk?
+-- Example: When did an account transition to at_risk?
 SELECT
     account_id,
     account_name,
     health_status,
     dbt_valid_from,
     dbt_valid_to       -- NULL means currently in this state
-FROM snapshots.snap_dim_accounts
+FROM snapshots.snap_accounts
 WHERE account_id = 123
 ORDER BY dbt_valid_from DESC;
 ```
 
-Use cases: churn pattern analysis, account tenure by health state, cohort studies before cancellation.
+Use cases: Churn pattern analysis, account tenure by health state, and longitudinal lead performance.
 
 ---
 
@@ -455,8 +453,8 @@ Production-ready revenue operations data pipeline with integrated analytics:
 
 - **Unified Data Model:** One `account_id` across all sources (HubSpot, Stripe, Mixpanel, Intercom)
 - **Interactive Dashboards:** Evidence.dev dashboards for revenue, health, and pipeline analytics
-- **Comprehensive Testing:** 102 automated data quality tests across all layers
-- **Change Tracking:** 7 SCD Type 2 snapshots for churn analysis and account history
+- **Comprehensive Testing:** 100 automated data quality tests across all layers
+- **Change Tracking:** 5 SCD Type 2 snapshots (YAML-based) for audit and history
 - **Production Ready:** Daily refresh schedule with error monitoring and test failures logged
 - **Extensible:** Add new sources in 3 steps (sources.yml → stg_* → int_*)
 
