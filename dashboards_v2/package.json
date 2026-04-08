@@ -36,5 +36,9 @@
     "trim@<0.0.3": ">0.0.3",
     "sqlite3": "5.1.5",
     "axios": "^1.7.4"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "svelte": "^5.55.2"
   }
 }
