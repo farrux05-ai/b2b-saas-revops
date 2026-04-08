@@ -9,6 +9,10 @@ A production-grade revenue operations data pipeline that unifies customer data f
 
 Status: Production Ready | Data freshness: Daily | Test Coverage: 100 tests | 23 models | 5 snapshots
 
+## 🔗 Live Demo
+- **Interactive Dashboard:** [Streamlit App](https://b2b-saas-revops-8f6iziyk5j3p8ylnhgwvhw.streamlit.app/)
+- **Project Documentation & Lineage:** [dbt Docs (GitHub Pages)](https://farrux05-ai.github.io/b2b-saas-revops/)
+
 ---
 
 ## System Architecture
@@ -519,4 +523,4 @@ Production-ready revenue operations data pipeline with integrated analytics:
 
 ---
 
-*Last updated: April 2026*
+*Last updated: April 8, 2026*
