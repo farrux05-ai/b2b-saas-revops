@@ -24,7 +24,7 @@ Database credentials (host, user, password, dbname, port) were written directly 
 **Layer:** Configuration  
 **Status:** Fixed
 
-The dbt schema naming convention was inconsistent. The marts layer was being materialized into a schema called `marts_marts` instead of something logical. This caused Evidence.dev dashboards to fail because they were querying schema names that did not match what dbt produced.
+The dbt schema naming convention was inconsistent. The marts layer was being materialized into a schema called `marts_marts` instead of something logical. This caused dashboarding tools (like Streamlit) to fail or require complex joining logic because they were querying schema names that did not match what dbt produced.
 
 **Fix:** `dbt_project.yml` and `profiles.yml` updated so that all three layers use a uniform, readable prefix: `revops_staging`, `revops_int`, `revops_marts`. Dashboard SQL files updated to match.
 

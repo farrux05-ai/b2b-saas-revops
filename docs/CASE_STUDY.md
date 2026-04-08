@@ -3,9 +3,9 @@
 **Industry:** B2B SaaS  
 **Company Size:** 150 accounts, $500K ARR  
 **Challenge:** Fragmented customer data causing reactive churn management  
-**Solution:** Unified RevOps pipeline with Evidence.dev dashboards  
+**Solution:** Unified RevOps pipeline with Streamlit dashboards  
 **Timeline:** 2 weeks (design + implementation)  
-**Tools:** dbt · DuckDB · Evidence.dev · Python
+**Tools:** dbt · DuckDB · Streamlit · Python
 
 ---
 
@@ -136,10 +136,12 @@ health_status =
   END
 ```
 
-**Week 2, Days 3-5:** Evidence.dev dashboards
-- Revenue dashboard (MRR trend, waterfall, top accounts)
-- Health scorecard (at-risk accounts, churn prediction)
-- Pipeline analysis (sales velocity, win rates)
+4. **Delivering insights** via Streamlit interactive reports
+
+### Timeline
+- **Week 1, Days 1-5:** Data modeling and dbt pipeline construction.
+- **Week 2, Days 1-3:** Health scoring logic and metric validation.
+- **Week 2, Days 4-5:** Streamlit dashboard development.
 
 ---
 
@@ -149,7 +151,7 @@ health_status =
 
 **Health Scorecard Reveals Crisis:**
 
-The first `dbt run` populated `dim_accounts` with health scores. The Evidence.dev dashboard showed:
+The first `dbt run` populated `dim_accounts` with health scores. The Streamlit dashboard showed:
 
 | Health Status | Count | Total MRR |
 |---------------|-------|-----------|
@@ -192,7 +194,7 @@ The CS team immediately:
 - CFO re-audited MRR calculations quarterly (found errors every time)
 
 **After:**
-- `dbt run` executes nightly → Evidence.dev dashboard auto-updates
+- `dbt run` executes nightly → Streamlit dashboard auto-updates
 - MRR calculated via tested SQL (158 dbt tests ensure accuracy)
 - Finance audit: Zero errors in Q1 close
 
@@ -290,13 +292,13 @@ Instead, I wrote:
 
 ---
 
-### 4. Evidence.dev for Accessibility
+### 4. Streamlit for Accessibility
 
 **Mistake I avoided:** "Just query the database."
 
-Non-technical stakeholders (CEO, Sales VP) can't write SQL. By using Evidence.dev:
+Non-technical stakeholders (CEO, Sales VP) can't write SQL. By using Streamlit:
 - Beautiful dashboards out-of-the-box
-- No login required (static site = shareable link)
+- Interactive widgets (sliders, filters) for "What-if" analysis
 - Mobile-friendly (CEO checked health scores from his phone)
 
 **Lesson:** The best data model is useless if people can't access it.
@@ -462,13 +464,13 @@ Stakeholders don't trust "magic data." They trust:
 This pipeline has:
 - 167 dbt tests
 - Auto-generated dbt docs (lineage diagrams)
-- Evidence dashboards with drill-down capability
+- Streamlit dashboards with drill-down capability
 
 ---
 
 ### 4. Ship Fast, Iterate
 
-The first Evidence dashboard had **3 pages** (Revenue, Health, Pipeline). It was enough to prove value.
+The first Streamlit dashboard had **3 pages** (Revenue, Health, Pipeline). It was enough to prove value.
 
 After launch, I added:
 - Cohort retention analysis
@@ -490,7 +492,7 @@ By connecting HubSpot, Stripe, Mixpanel, and Intercom into a single dbt pipeline
 
 **Total impact: $303K annually** from a 2-week project.
 
-The tools (dbt, DuckDB, Evidence.dev) were just enablers. The real win was **answering the right business question:**
+The tools (dbt, DuckDB, Streamlit) were just enablers. The real win was **answering the right business question:**
 
 *"Which accounts need our attention right now?"*
 
@@ -500,7 +502,7 @@ The tools (dbt, DuckDB, Evidence.dev) were just enablers. The real win was **ans
 
 **Want to replicate this?**
 
-1. **[View the code](https://github.com/farrux05-ai/b2b-saas-revops)** - Full dbt project + Evidence dashboards
+1. **[View the code](https://github.com/farrux05-ai/b2b-saas-revops)** - Full dbt project + Streamlit dashboards
 2. **[Read the README](../README.md)** - Quick start guide
 3. **[Study the architecture](TECHNICAL.md)** - Deep technical dive
 

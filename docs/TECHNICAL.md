@@ -11,7 +11,7 @@ This document explains the **why** behind every architectural decision, with imp
 3. [dbt Layer Strategy](#dbt-layer-strategy)
 4. [Performance Optimizations](#performance-optimizations)
 5. [Testing Philosophy](#testing-philosophy)
-6. [Evidence.dev Integration](#evidencedev-integration)
+6. [Streamlit Integration](#streamlit-integration)
 7. [Common Pitfalls & Solutions](#common-pitfalls--solutions)
 
 ---
@@ -29,7 +29,7 @@ This document explains the **why** behind every architectural decision, with imp
 - **Cost** - Free, no cloud data warehouse bills
 
 **Trade-off:** 
-- Limited to single-writer (dbt → Evidence must coordinate)
+- Limited to single-writer (dbt → Streamlit must coordinate)
 - No native replication (solved with file backups)
 
 **When to migrate:** When concurrent users >5 or data >100GB. Migration path: DuckDB → MotherDuck (cloud DuckDB) or Snowflake
@@ -82,49 +82,41 @@ dbt automatically:
 
 ---
 
-### Why Evidence.dev over Streamlit/Tableau?
+### Why Streamlit over Evidence.dev/Tableau?
 
-**Decision:** Use Evidence.dev for BI layer
+**Decision:** Use Streamlit for BI layer
 
 **Comparison:**
 
 | Tool | Strengths | Weaknesses |
 |------|-----------|------------|
-| **Streamlit** | Python-native, great for ML models | State management complex, slow reruns |
+| **Evidence.dev** | Code-first, Git-native, beautiful defaults | Newer tool, smaller community |
 | **Tableau** | Enterprise features, drag-and-drop | Expensive ($70/user/mo), not code-first |
 | **Metabase** | Free, easy setup | Limited customization, manual SQL |
-| **Evidence.dev** | Code-first, Git-native, beautiful defaults | Newer tool, smaller community |
+| **Streamlit** | Python-native, infinite flexibility | State management needs care |
 
-**Why Evidence won:**
-- **Git workflow** - Reports are markdown files → version control, code review, CI/CD
-- **SQL-first** - Queries live in the page, no separate BI tool to learn
-- **Static site generation** - Blazing fast load times (pre-rendered)
-- **Component library** - `<LineChart>`, `<DataTable>`, `<BigValue>` just work
+**Why Streamlit won:**
+- **Python Integration** - Direct access to the DuckDB file using Python logic, no separate build step needed.
+- **Dynamic Interactivity** - Better support for complex filtering and cross-filtering compared to static SSGs.
+- **Custom Components** - Ability to use Plotly, Altair, or custom HTML/JS if needed.
+- **Ecosystem** - Massive community and library support for any visual edge-case.
 
-**Example Evidence page:**
-```markdown
-# Revenue Dashboard
+**Example Dashboard code:**
+```python
+import streamlit as st
+import duckdb
 
-{% raw %}
-```sql monthly_mrr
-select date_trunc('month', subscription_start) as month,
-       sum(mrr) as total_mrr
-from {{ ref('fct_revenue') }}
-group by 1
-order by 1 desc
-limit 12
-```
-{% endraw %}
+# Database connection
+conn = duckdb.connect('duckdb/revops.duckdb', read_only=True)
 
-<LineChart 
-  data={monthly_mrr} 
-  x=month 
-  y=total_mrr 
-  yFmt='$#,##0k'
-/>
+# Query
+data = conn.execute("SELECT month, SUM(mrr) FROM fct_revenue GROUP BY 1").df()
+
+# Viz
+st.line_chart(data, x='month', y='mrr')
 ```
 
-Compare to Streamlit equivalent (3x more code, state management, caching logic).
+This approach allows for a "BI-as-Code" experience while staying within the Python ecosystem.
 
 ---
 
@@ -329,7 +321,7 @@ FROM {% raw %}{{ ref('int_accounts') }}{% endraw %}
 ```
 
 **Why materialize as table?**
-- Evidence.dev queries this hundreds of times (every dashboard load)
+- Streamlit queries this during dashboard interactions
 - Health logic is complex (multiple CASE statements)
 - Table = pre-computed → instant query response
 
@@ -564,118 +556,36 @@ Tables like `dead_letter` (used for capturing ingestion errors) are explicitly s
 
 ---
 
-## Evidence.dev Integration
+## Streamlit Integration
 
 ### Connection Setup
 
-**File:** `evidence_reports/sources/duckdb/connection.yaml`
+**File:** `dashboard.py`
 
-```yaml
-type: duckdb
-filename: ../../duckdb/revops.duckdb  # Relative path
-extensions:
-  - httpfs  # For reading remote files (future)
+```python
+import streamlit as st
+import duckdb
+
+@st.cache_resource
+def get_connection():
+    return duckdb.connect('duckdb/revops_analytics.duckdb', read_only=True)
+
+conn = get_connection()
 ```
 
-**Why relative path?**
-- Evidence dev server runs from `evidence_reports/` directory
-- Absolute paths break when deploying to different environments
+**Why cache_resource?**
+- Prevents re-opening the database file on every user interaction or script rerun.
+- Drastically improves performance in multi-user environments.
 
 ---
 
-### Query Patterns
+### Deployment (Streamlit Cloud)
 
-**1. Parameterized queries with dropdown filters**
+Streamlit dashboards can be hosted easily on Streamlit Cloud:
 
-```markdown
-<Dropdown 
-  name=segment_filter 
-  data={segments} 
-  value=segment_name
-  title="Filter by Segment"
-/>
-
-```sql filtered_accounts
-select * 
-from {{ ref('dim_accounts') }}
-where 1=1
-  {#if inputs.segment_filter.value !== 'All'}
-    and segment = '${inputs.segment_filter.value}'
-  {/if}
-order by mrr desc
-```
-
-<DataTable data={filtered_accounts} />
-```
-
-**2. Reusable queries across pages**
-
-```markdown
-<!-- queries/top_accounts.sql -->
-select account_id, account_name, mrr
-from {{ ref('dim_accounts') }}
-order by mrr desc
-limit 10
-
-<!-- pages/dashboard.md -->
-{@partial 'queries/top_accounts.sql'}
-<DataTable data={top_accounts} />
-
-<!-- pages/health.md -->
-{@partial 'queries/top_accounts.sql'}
-Top revenue accounts: {top_accounts[0].account_name}
-```
-
-**3. Custom formatting**
-
-```markdown
-<BigValue 
-  data={total_mrr} 
-  value=mrr
-  fmt='$#,##0k'        <!-- $450k instead of 450000 -->
-  comparison=prev_month
-  comparisonFmt='pct'  <!-- +15% instead of 0.15 -->
-/>
-```
-
----
-
-### Deployment (GitHub Pages / Vercel)
-
-**Evidence builds to static HTML**, so it can be hosted anywhere:
-
-```bash
-# Build production site
-npm run build
-
-# Output in .evidence/build/
-# Deploy to:
-# - GitHub Pages (free)
-# - Vercel (free tier)
-# - Netlify (free tier)
-# - S3 + CloudFront
-```
-
-**CI/CD with GitHub Actions:**
-
-```yaml
-# .github/workflows/deploy-evidence.yml
-name: Deploy Evidence
-on:
-  push:
-    branches: [main]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: npm install
-      - run: npm run build
-      - uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .evidence/build
-```
+1.  **Push to GitHub**: Ensure `dashboard.py` and `requirements.txt` are at the root or correctly linked.
+2.  **Connect Repo**: Point Streamlit Cloud to your repository.
+3.  **Secrets**: Add secrets for database paths if they are not relative.
 
 Every `git push` → auto-rebuild dashboard.
 
@@ -727,23 +637,15 @@ IO Error: Could not set lock on file "revops.duckdb":
 Resource temporarily unavailable
 ```
 
-**Cause:** Evidence dev server and `dbt run` both trying to write simultaneously.
+**Cause:** Streamlit and `dbt run` both trying to access `revops.duckdb` simultaneously.
 
 **Solution:**
-```bash
-# Kill Evidence server before dbt run
-pkill -f "npm run dev"
-dbt run
-npm run dev  # Restart Evidence
+Use a read-only connection for Streamlit:
+```python
+# dashboard.py
+conn = duckdb.connect('duckdb/revops_analytics.duckdb', read_only=True)
 ```
-
-Or use read-only connection for Evidence:
-```yaml
-# connection.yaml
-type: duckdb
-filename: ../../duckdb/revops.duckdb
-read_only: true  # Evidence only reads, never writes
-```
+Streamlit only reads, never writes, allowing dbt to run alongside it if needed (though sequential execution is safer).
 
 ---
 

@@ -2,10 +2,10 @@
 
 [![dbt Cloud](https://img.shields.io/badge/dbt-Core-FF6849?style=flat&logo=dbt)](https://www.getdbt.com/)
 [![DuckDB](https://img.shields.io/badge/DuckDB-1.0+-FF6849?style=flat)](https://duckdb.org/)
-[![Evidence](https://img.shields.io/badge/Evidence-Analytics-4A90E2?style=flat)](https://www.evidence.dev/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?style=flat&logo=streamlit)](https://streamlit.io/)
 [![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat&logo=python)](https://www.python.org/)
 
-A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with **dbt**, **DuckDB**, and **Evidence**.
+A production-grade revenue operations data pipeline that unifies customer data from HubSpot, Stripe, Mixpanel, and Intercom into a single source of truth — built with **dbt**, **DuckDB**, and **Streamlit**.
 
 Status: Production Ready | Data freshness: Daily | Test Coverage: 100 tests | 23 models | 5 snapshots
 
@@ -17,7 +17,7 @@ Status: Production Ready | Data freshness: Daily | Test Coverage: 100 tests | 23
 
 ## System Architecture
 
-![B2B SaaS RevOps Architecture](./screenshots/b2b_saas_revops_architecture_evidence.svg)
+![B2B SaaS RevOps Architecture](./screenshots/b2b_saas_revops_architecture_streamlit.svg)
 
 ### Architecture Overview
 
@@ -39,7 +39,7 @@ This pipeline implements a **modern data stack** pattern with four key layers:
    - **Intermediate (int.\*)**: Business logic joins, complex calculations, fact assembly
    - **Marts (marts.\*)**: Final aggregated tables optimized for analytics and BI consumption
 
-4. **Analytics Layer (Evidence)**
+4. **Analytics Layer (Streamlit)**
    - Interactive dashboards and reports built from mart tables
    - Real-time insights for revenue ops, sales, customer success, and finance teams
    - Single source of truth for business metrics
@@ -81,7 +81,7 @@ This pipeline creates a **single source of truth** by:
 1. **Unifying 4 data sources** around `account_id` as the central entity
 2. **Automating transformations** with dbt for consistent business logic  
 3. **Tracking history** with SCD Type 2 snapshots to understand lifecycle changes
-4. **Delivering insights** via Evidence.dev interactive reports
+4. **Delivering insights** via Streamlit interactive reports
 
 ### Business Impact
 
@@ -196,17 +196,9 @@ b2b-saas-revops/
 ├── macros/
 │   └── postgres_source.sql      # DuckDB postgres_scan wrapper (reads DSN from env)
 │
-├── dashboards_v2/               # Evidence Analytics (interactive BI dashboards)
-│   ├── pages/
-│   │   ├── index.md             # Revenue, Pipeline, and Account Health dashboard
-│   │   └── queries/             # SQL queries for each visualization
-│   ├── sources/
-│   │   └── revops/              # DuckDB connection configuration
-│   ├── evidence.config.yaml     # Evidence.dev configuration
-│   ├── package.json
-│   └── README.md
+├── dashboard.py                 # Streamlit app (primary dashboard)
 │
-├── screenshots/                 # Dashboard evidence
+├── screenshots/                 # Dashboard visuals
 │   ├── mrr_trend.jpg           # Monthly MRR trend
 │   ├── mrr_movement.jpg        # MRR waterfall by type
 │   ├── channel_summary.jpg     # Marketing channel breakdown
@@ -286,23 +278,12 @@ streamlit run dashboard.py
 ### 1. dbt Documentation Portal
 Explore data lineage, model dependencies, and complete data dictionary:
 
-```bash
-dbt docs serve
-# Navigate to http://localhost:8080
-```
-
-**Available at:** http://localhost:8080
-
-**Features:**
-- 📈 Visual data lineage graph showing model dependencies
-- 📚 Complete data dictionary with column descriptions and types
-- 🔍 Model, source, and test documentation
-- 🏷️ Tag-based navigation (staging, marts, core, etc.)
-- 🧪 Test coverage and results
+- **Local:** `dbt docs serve` (http://localhost:8080)
+- **Live:** [GitHub Pages Docs](https://farrux05-ai.github.io/b2b-saas-revops/)
 
 ---
 
-### 2. Streamlit Revenue Operations Dashboard ⭐ (Recommended)
+### 2. Streamlit Revenue Operations Dashboard ⭐
 
 Interactive B2B revenue intelligence dashboard with real-time data from DuckDB.
 
@@ -442,29 +423,10 @@ export DBT_POSTGRES_USER=your_user
 export DBT_POSTGRES_PASSWORD=your_password
 ```
 
-### Evidence Dashboard Issues
+### Dashboard Issues
 
-**"Error: No data source configured"**
-Verify `dashboards_v2/sources/revops/connection.yaml` points to correct DuckDB path:
-```yaml
-name: revops
-type: duckdb
-options:
-  filename: ../duckdb/revops_analytics.duckdb
-```
-
-**"npm ERR! code ENOENT"**
-Install dependencies first:
-```bash
-cd dashboards_v2
-npm install
-```
-
-**"Error loading data"**
-Make sure you've run the dbt pipeline first:
-```bash
-dbt run && dbt snapshot
-```
+**"Relation "marts.dim_accounts" does not exist"**
+Run `dbt run` to build the models first.
 
 ---
 
@@ -472,9 +434,8 @@ dbt run && dbt snapshot
 
 - **Orchestration:** dbt 1.7+
 - **Data Warehouse:** DuckDB (local) / PostgreSQL (source)
-- **Analytics:** Evidence.dev
+- **Analytics:** Streamlit
 - **Language:** SQL, Python 3.12
-- **Node.js:** 18+ (for Evidence dashboard)
 
 ---
 
@@ -482,7 +443,7 @@ dbt run && dbt snapshot
 
 - [Case Study](./docs/CASE_STUDY.md) — Business impact and implementation story
 - [Technical Deep-Dive](./docs/TECHNICAL.md) — Architecture decisions and advanced topics
-- [Deployment Guide](./docs/DEPLOYMENT.md) — How to host Evidence and dbt docs
+- [Deployment Guide](./docs/DEPLOYMENT.md) — How to host Streamlit and dbt docs
 
 ---
 
@@ -515,7 +476,7 @@ Lead generation and conversion rates by channel source. ROI analysis for each ma
 Production-ready revenue operations data pipeline with integrated analytics:
 
 - **Unified Data Model:** One `account_id` across all sources (HubSpot, Stripe, Mixpanel, Intercom)
-- **Interactive Dashboards:** Evidence.dev dashboards for revenue, health, and pipeline analytics
+- **Interactive Dashboards:** Streamlit dashboards for revenue, health, and pipeline analytics
 - **Comprehensive Testing:** 100 automated data quality tests across all layers
 - **Change Tracking:** 5 SCD Type 2 snapshots (YAML-based) for audit and history
 - **Production Ready:** Daily refresh schedule with error monitoring and test failures logged

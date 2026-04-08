@@ -8,7 +8,7 @@ warnings.filterwarnings('ignore')
 
 st.set_page_config(page_title="RevOps Dashboard", page_icon="📊", layout="wide", initial_sidebar_state="collapsed")
 
-# EVIDENCE STYLE - PROFESSIONAL B2B
+# MODERN B2B STYLE - PROFESSIONAL
 st.markdown("""
 <style>
     * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
