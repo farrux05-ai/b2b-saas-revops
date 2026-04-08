@@ -4,61 +4,56 @@ snapshots:
   # Raw source snapshots - track changes at source level
   
   - name: snap_accounts
-    relation: source('revops_raw', 'accounts')
+    relation: "{{ ref('stg_accounts') }}"
     description: >
-      Tracks account attribute changes from raw source.
-      Monitors: industry, country, subscription status changes.
-      Strategy: check_cols to detect any attribute changes.
+      Captures historical state for account entities to enable point-in-time analysis of industry, firmographics, and ownership. 
+      Uses a check strategy on core attributes to detect business-relevant deltas.
     config:
       target_schema: snapshots
       strategy: check
-      unique_key: account_id
-      check_cols: ['industry', 'country', 'subscription_status']
+      unique_key: id
+      check_cols: ['industry', 'country', 'employee_count', 'owner_id']
 
   - name: snap_contacts
-    relation: source('revops_raw', 'contacts')
+    relation: "{{ ref('stg_contacts') }}"
     description: >
-      Tracks contact attribute changes from raw source.
-      Monitors: job title, primary contact flag, account association.
-      Strategy: check_cols to detect changes in contact attributes.
+      Maintains a history of contact associations and roles within accounts. 
+      Essential for tracking career movements and changes in primary contact status over time.
     config:
       target_schema: snapshots
       strategy: check
-      unique_key: contact_id
+      unique_key: id
       check_cols: ['job_title', 'is_primary', 'account_id']
 
   - name: snap_opportunities
-    relation: source('revops_raw', 'opportunities')
+    relation: "{{ ref('stg_opportunities') }}"
     description: >
-      Tracks opportunity/deal stage and amount changes from raw source.
-      Monitors: stage progression, amount updates, close date changes.
-      Strategy: check_cols to detect pipeline movement and amount changes.
+      Provides a historical record of the sales pipeline, including stage transitions and amount revisions. 
+      Critical for calculating sales velocity and historical pipeline snapshots.
     config:
       target_schema: snapshots
       strategy: check
-      unique_key: opportunity_id
+      unique_key: id
       check_cols: ['stage', 'amount', 'close_date']
 
-  - name: snap_activities
-    relation: source('revops_raw', 'activities')
+  - name: snap_leads
+    relation: "{{ ref('stg_leads') }}"
     description: >
-      Tracks activity/engagement events from raw source.
-      Monitors: engagement type and timestamp of customer activities.
-      Strategy: timestamp to capture all new engagement records.
-    config:
-      target_schema: snapshots
-      strategy: timestamp
-      unique_key: activity_id
-      updated_at: created_at
-
-  - name: snap_subscriptions
-    relation: source('revops_raw', 'subscriptions')
-    description: >
-      Tracks subscription status and billing changes from raw source.
-      Monitors: plan changes, status transitions, MRR/ARR updates, cancellation.
-      Strategy: check_cols to detect billing and status changes.
+      Records the evolution of lead status and scoring. 
+      Enables longitudinal analysis of lead quality and conversion performance across marketing cycles.
     config:
       target_schema: snapshots
       strategy: check
-      unique_key: subscription_id
+      unique_key: id
+      check_cols: ['job_title', 'status', 'lead_score', 'owner_id']
+
+  - name: snap_subscriptions
+    relation: "{{ ref('stg_subscriptions') }}"
+    description: >
+      Tracks the lifecycle of customer subscriptions, including plan upgrades, MRR fluctuations, and churn events. 
+      Serves as the foundation for historical revenue reporting.
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: id
       check_cols: ['plan', 'status', 'mrr']
