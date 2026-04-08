@@ -4,7 +4,7 @@ snapshots:
   # Raw source snapshots - track changes at source level
   
   - name: snap_accounts
-    relation: "{{ ref('stg_accounts') }}"
+    relation: ref('stg_accounts')
     description: >
       Captures historical state for account entities to enable point-in-time analysis of industry, firmographics, and ownership. 
       Uses a check strategy on core attributes to detect business-relevant deltas.
@@ -15,7 +15,7 @@ snapshots:
       check_cols: ['industry', 'country', 'employee_count', 'owner_id']
 
   - name: snap_contacts
-    relation: "{{ ref('stg_contacts') }}"
+    relation: ref('stg_contacts')
     description: >
       Maintains a history of contact associations and roles within accounts. 
       Essential for tracking career movements and changes in primary contact status over time.
@@ -26,7 +26,7 @@ snapshots:
       check_cols: ['job_title', 'is_primary', 'account_id']
 
   - name: snap_opportunities
-    relation: "{{ ref('stg_opportunities') }}"
+    relation: ref('stg_opportunities')
     description: >
       Provides a historical record of the sales pipeline, including stage transitions and amount revisions. 
       Critical for calculating sales velocity and historical pipeline snapshots.
@@ -37,7 +37,7 @@ snapshots:
       check_cols: ['stage', 'amount', 'close_date']
 
   - name: snap_leads
-    relation: "{{ ref('stg_leads') }}"
+    relation: ref('stg_leads')
     description: >
       Records the evolution of lead status and scoring. 
       Enables longitudinal analysis of lead quality and conversion performance across marketing cycles.
@@ -48,7 +48,7 @@ snapshots:
       check_cols: ['job_title', 'status', 'lead_score', 'owner_id']
 
   - name: snap_subscriptions
-    relation: "{{ ref('stg_subscriptions') }}"
+    relation: ref('stg_subscriptions')
     description: >
       Tracks the lifecycle of customer subscriptions, including plan upgrades, MRR fluctuations, and churn events. 
       Serves as the foundation for historical revenue reporting.
